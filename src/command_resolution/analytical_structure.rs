@@ -1,6 +1,6 @@
 use serde_json::Value;
 use crate::command_resolution::command_model::{Command, Judge, Condition, LogicalOp, OrderBy};
-
+use crate::command_resolution::{judge_text::judge_symbol, judge_text::judge_text};
 fn get_command(cmd: &str) -> Command {
     match cmd {
         "create" => Command::Create,
@@ -23,22 +23,22 @@ fn get_command(cmd: &str) -> Command {
 fn get_judge(judge: &str) -> Judge {
     // 快速路径：常见的小写和符号
     match judge {
-        "between" => Judge::Between,
-        "eq" | "=" => Judge::EQ,
-        "ne" | "!=" => Judge::NE,
-        "gt" | ">" => Judge::GT,
-        "gte" | ">=" => Judge::GTE,
-        "lt" | "<" => Judge::LT,
-        "lte" | "<=" => Judge::LTE,
+        judge_text::BETWEEN => Judge::Between,
+        judge_text::EQUAL | judge_symbol::EQUAL => Judge::EQ,
+        judge_text::NOT_EQUAL | judge_symbol::NOT_EQUAL => Judge::NE,
+        judge_text::GREATER_THAN | judge_symbol::GREATER_THAN => Judge::GT,
+        judge_text::GREATER_THAN_EQUAL | judge_symbol::GREATER_THAN_EQUAL => Judge::GTE,
+        judge_text::LESS_THAN | judge_symbol::LESS_THAN => Judge::LT,
+        judge_text::LESS_THAN_EQUAL | judge_symbol::LESS_THAN_EQUAL => Judge::LTE,
         _ => {
             // 慢速路径：需要转换大小写
             match judge.to_lowercase().as_str() {
-                "eq" => Judge::EQ,
-                "ne" => Judge::NE,
-                "gt" => Judge::GT,
-                "gte" => Judge::GTE,
-                "lt" => Judge::LT,
-                "lte" => Judge::LTE,
+                judge_text::EQUAL => Judge::EQ,
+                judge_text::NOT_EQUAL => Judge::NE,
+                judge_text::GREATER_THAN => Judge::GT,
+                judge_text::GREATER_THAN_EQUAL => Judge::GTE,
+                judge_text::LESS_THAN => Judge::LT,
+                judge_text::LESS_THAN_EQUAL => Judge::LTE,
                 _ => Judge::NONE,
             }
         }

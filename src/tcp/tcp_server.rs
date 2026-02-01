@@ -1,6 +1,7 @@
 use tokio::io::{AsyncReadExt, AsyncWriteExt};
 use tokio::net::{TcpListener, TcpStream};
 use crate::model::{Request, Response};
+use crate::library::{logging::log};
 pub(crate) struct TcpServer {
     host: String,
     port: u16,
@@ -32,12 +33,11 @@ impl TcpServer {
         loop {
             match listener.accept().await {
                 Ok((socket, peer_addr)) => {
-                    println!("新连接来自: {}", peer_addr);
+                    log::debug(format!("新连接来自: {}", peer_addr).as_str());
                     tokio::spawn(handle_client(socket));
                 }
                 Err(e) => {
-                    eprintln!("接受连接失败: {}", e);
-                    // 可选择是否中断服务；这里选择继续监听
+                    log::error(format!("连接出错:{}", e).as_str());
                 }
             }
         }
