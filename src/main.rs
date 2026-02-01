@@ -1,6 +1,7 @@
 mod tcp;
 mod command_resolution;
 mod model;
+mod library;
 use tcp::tcp_server::TcpServer;
 #[tokio::main]
 async fn main() {
