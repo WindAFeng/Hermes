@@ -5,6 +5,7 @@ use serde_json::{Map, Value};
 use std::collections::HashMap;
 use crate::model::MaybeMany::{Many, One};
 
+#[derive(Debug)]
 pub(crate) struct CommandResolution {
     pub database: String,
     pub command: Command,

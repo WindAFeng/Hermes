@@ -3,6 +3,7 @@ use serde_json::{Value, };
 use crate::model::MaybeMany;
 
 /// 数据库操作指令枚举
+#[derive(Debug)]
 pub(crate) enum Command {
     Create,   // 创建数据库或表
     NewTable, // 创建新表单
