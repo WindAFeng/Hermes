@@ -1,15 +1,13 @@
-use crate::command_resolution::analytical_structure::parse_condition;
-use crate::command_resolution::command_model::{AnalysisArgs, Condition};
+use crate::command_resolution::analytical_structure::{parse_condition, get_command, get_order_by};
+use crate::command_resolution::command_model::{AnalysisArgs, Command, Condition, OrderBy};
 use crate::model::{DataBase, MaybeMany, Request};
 use serde_json::{Map, Value};
 use std::collections::HashMap;
-use serde_json::Error as JsonError;
-use crate::command_resolution::command_model::Judge::NONE;
 use crate::model::MaybeMany::{Many, One};
 
 pub(crate) struct CommandResolution {
     pub database: String,
-    pub command: String,
+    pub command: Command,
     pub table: String,
     pub args: AnalysisArgs,
 }
@@ -23,7 +21,7 @@ impl CommandResolution {
         };
         CommandResolution {
             database: init_database_url(&request.database),
-            command: request.command,
+            command: get_command(&request.command),
             table: request.table,
             args: args_,
         }
@@ -69,22 +67,19 @@ fn init_limit(request: &Request) -> Option<u32> {
     // 强制限制最大值
     Some(limit.min(MAX_LIMIT))
 }
-fn init_order_by(request: &Request) -> Option<HashMap<String, String>> {
-    request
-        .args
-        .get("order_by")
-        .and_then(|val| val.as_object())
-        .map(|obj| {
-            obj.iter()
-                .filter_map(|(k, v)| {
-                    if let Value::String(str_val) = v {
-                        Some((k.clone(), str_val.clone()))
-                    } else {
-                        None
-                    }
-                })
-                .collect()
-        })
+fn init_order_by(request: &Request) -> Option<HashMap<String, OrderBy>> {
+    match request.args.get("order_by")? {
+        Value::Object(obj) => {
+            let mut result: HashMap<String, OrderBy> = HashMap::new();
+            for (key, value) in obj {
+                if let Value::String(v )= value{
+                    result.insert(key.to_string(), get_order_by(&v));
+                }
+            };
+            Some(result)
+        }
+        _ => None,
+    }
 }
 fn init_data(request: &Request) -> Option<MaybeMany> {
     fn object_to_hashmap(obj: &Map<String, Value>) -> HashMap<String, Value> {

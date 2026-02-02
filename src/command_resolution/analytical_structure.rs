@@ -1,7 +1,7 @@
 use serde_json::Value;
 use crate::command_resolution::command_model::{Command, Judge, Condition, LogicalOp, OrderBy};
 use crate::command_resolution::{judge_text::judge_symbol, judge_text::judge_text};
-fn get_command(cmd: &str) -> Command {
+pub fn get_command(cmd: &str) -> Command {
     match cmd {
         "create" => Command::Create,
         "new" => Command::NewTable,
@@ -20,10 +20,22 @@ fn get_command(cmd: &str) -> Command {
         },
     }
 }
+pub fn get_order_by(order_by: &str) -> OrderBy {
+    match order_by {
+        "asc" => OrderBy::ASC,
+        "desc" => OrderBy::DESC,
+        _ => match order_by {
+            "ASC" => OrderBy::ASC,
+            "DESC" => OrderBy::DESC,
+            _ => OrderBy::NONE,
+        },
+    }
+}
 fn get_judge(judge: &str) -> Judge {
     // 快速路径：常见的小写和符号
     match judge {
         judge_text::BETWEEN => Judge::Between,
+        judge_text::IS_NOT => Judge::IsNot,
         judge_text::EQUAL | judge_symbol::EQUAL => Judge::EQ,
         judge_text::NOT_EQUAL | judge_symbol::NOT_EQUAL => Judge::NE,
         judge_text::GREATER_THAN | judge_symbol::GREATER_THAN => Judge::GT,
@@ -42,17 +54,6 @@ fn get_judge(judge: &str) -> Judge {
                 _ => Judge::NONE,
             }
         }
-    }
-}
-fn get_order_by(order_by: &str) -> OrderBy {
-    match order_by {
-        "asc" => OrderBy::ASC,
-        "desc" => OrderBy::DESC,
-        _ => match order_by {
-            "ASC" => OrderBy::ASC,
-            "DESC" => OrderBy::DESC,
-            _ => OrderBy::NONE,
-        },
     }
 }
 pub fn parse_condition(value: &Value) -> Result<Condition, Box<dyn std::error::Error>> {
@@ -110,23 +111,33 @@ pub fn parse_condition(value: &Value) -> Result<Condition, Box<dyn std::error::E
 }
 // 解析 ["eq", 1] 或 ["between", 2, 3]
 fn parse_expr_array(value: &Value) -> Result<(Judge, Vec<Value>), Box<dyn std::error::Error>> {
-    if let Value::Array(arr) = value {
-        if arr.is_empty() {
-            return Err("Empty operator array".into());
+    match value {
+        Value::Array(arr) => {
+            if arr.is_empty() {
+                return Err("Empty operator array".into());
+            }
+
+            // 0号位是操作符
+            let op_str = arr.get(0).and_then(|v| v.as_str()).ok_or("Invalid op")?;
+
+            // 1号位及以后都是参数
+            let args = arr.iter().skip(1).cloned().collect::<Vec<_>>();
+
+            // 将字符串转换为 Op 枚举
+            let op = get_judge(op_str);
+
+            Ok((op, args))
         }
-
-        // 0号位是操作符
-        let op_str = arr.get(0).and_then(|v| v.as_str()).ok_or("Invalid op")?;
-
-        // 1号位及以后都是参数
-        let args = arr.iter().skip(1).cloned().collect::<Vec<_>>();
-
-        // 将字符串转换为 Op 枚举
-        let op = get_judge(op_str);
-
-        Ok((op, args))
-    } else {
-        Err("Expr must be an array".into())
+        Value::String(str) => {
+            Ok((Judge::EQ, vec![Value::String(str.clone())]))
+        }
+        Value::Number(num) => {
+            Ok((Judge::EQ, vec![Value::Number(num.clone())]))
+        }
+        Value::Bool(bool) => {
+            Ok((Judge::EQ, vec![Value::Bool(bool.clone())]))
+        }
+        _ => Err("Expr must be an array".into())
     }
 }
 // 解析逻辑组内部的数组 [ ... ]

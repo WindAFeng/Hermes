@@ -62,11 +62,11 @@ pub enum Condition {
 pub struct AnalysisArgs{
     pub where_logic: Condition,
     pub limit: Option<u32>,
-    pub order_by: Option<HashMap<String, String>>,
+    pub order_by: Option<HashMap<String, OrderBy>>,
     pub data: Option<MaybeMany>
 }
 
-
+#[derive(Debug)]
 pub enum OrderBy{
     ASC,
     DESC,
