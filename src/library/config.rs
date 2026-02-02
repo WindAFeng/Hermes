@@ -10,7 +10,7 @@ pub struct Config{
     pub server: Server,
 }
 pub fn config() -> Config {
-    fn define_config() -> Config {
+    fn default_config() -> Config {
         Config{
             server: Server {
                 host: String::from("127.0.0.1"),
@@ -24,9 +24,9 @@ pub fn config() -> Config {
                 config
             }
             else {
-                define_config()
+                default_config()
             }
         },
-        Err(_) => define_config(),
+        Err(_) => default_config(),
     }
 }
