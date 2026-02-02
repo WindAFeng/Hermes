@@ -1,5 +1,5 @@
 use crate::command_resolution::analytical_structure::{parse_condition, get_command, get_order_by};
-use crate::command_resolution::command_model::{AnalysisArgs, Command, Condition, OrderBy};
+use crate::model::{AnalysisArgs, Command, Condition, OrderBy};
 use crate::model::{DataBase, MaybeMany, Request};
 use serde_json::{Map, Value};
 use std::collections::HashMap;

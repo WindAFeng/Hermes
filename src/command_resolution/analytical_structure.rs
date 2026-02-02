@@ -1,5 +1,5 @@
 use serde_json::Value;
-use crate::command_resolution::command_model::{Command, Judge, Condition, LogicalOp, OrderBy};
+use crate::model::{Command, Judge, Condition, LogicalOp, OrderBy};
 use crate::command_resolution::{judge_text::judge_symbol, judge_text::judge_text};
 pub fn get_command(cmd: &str) -> Command {
     match cmd {

@@ -13,6 +13,7 @@ impl TcpServer {
             port,
         }
     }
+    #[warn(dead_code)]
     pub fn on_websocket(&self) {
         // 创建对websocket的支持
         todo!()

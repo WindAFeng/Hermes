@@ -19,7 +19,6 @@ pub async fn handle_client(mut socket: TcpStream) {
             let req: Request = serde_json::from_slice(&buf[..n])
                 .map_err(|e| std::io::Error::new(std::io::ErrorKind::InvalidData, e))?;
             let command_resolution = CommandResolution::new(req);
-            println!("{:?}", command_resolution);
             let resp = Response {
                 code: 0,
                 message: "success".to_string(),
@@ -32,7 +31,6 @@ pub async fn handle_client(mut socket: TcpStream) {
         }
             .await
         {
-            eprintln!("处理客户端时出错: {}", e);
             log::warn(format!("{}", e).as_str());
             break;
         }
