@@ -26,5 +26,5 @@ pub(crate) struct Request {
     pub database: DataBase,
     pub table: String,
     pub args: HashMap<String, Value>,
-    pub data: HashMap<String, Value>,
+    pub data: Value,
 }

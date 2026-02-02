@@ -3,18 +3,11 @@ mod command_resolution;
 mod model;
 mod library;
 use tcp::tcp_server::TcpServer;
-use library::{logging::log, config::{config, Config, Server}};
+use library::{logging::log, config::config};
 #[tokio::main]
 async fn main() {
-    let cfg = config().unwrap_or(Config {
-        server: Server {
-            host: "127.0.0.1".to_string(),
-            port: 8080,
-        }
-    });
-    let host: String = cfg.server.host;
-    let port: u16 = cfg.server.port;
-    let tcp_server: TcpServer = TcpServer::new(host, port);
+    let cfg = config();
+    let tcp_server: TcpServer = TcpServer::new(cfg.server.host, cfg.server.port);
     match tcp_server.run().await {
         Ok(_) => (),
         Err(e) => {

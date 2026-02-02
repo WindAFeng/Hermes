@@ -1,6 +1,7 @@
 use tokio::io::{AsyncReadExt, AsyncWriteExt};
 use tokio::net::TcpStream;
 use crate::model::{Request, Response};
+use crate::command_resolution::command_resolution::CommandResolution;
 
 pub async fn handle_client(mut socket: TcpStream) {
     // 创建4kb缓冲
@@ -17,8 +18,8 @@ pub async fn handle_client(mut socket: TcpStream) {
 
         let req: Request = serde_json::from_slice(&buf[..n])
             .map_err(|e| std::io::Error::new(std::io::ErrorKind::InvalidData, e))?;
-
-
+        let command_resolution = CommandResolution::new(req);
+        println!("{:?}", command_resolution.args);
         let resp = Response {
             code: 0,
             message: "success".to_string(),

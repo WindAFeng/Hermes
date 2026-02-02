@@ -58,12 +58,15 @@ pub enum Condition {
     },
     NONE
 }
+#[derive(Debug)]
 pub struct AnalysisArgs{
     pub where_logic: Condition,
     pub limit: Option<u32>,
-    pub order_by: Option<Vec<HashMap<String, String>>>,
+    pub order_by: Option<HashMap<String, String>>,
     pub data: Option<MaybeMany>
 }
+
+
 pub enum OrderBy{
     ASC,
     DESC,

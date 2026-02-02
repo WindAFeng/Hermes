@@ -1,9 +1,11 @@
 use crate::command_resolution::analytical_structure::parse_condition;
 use crate::command_resolution::command_model::{AnalysisArgs, Condition};
 use crate::model::{DataBase, MaybeMany, Request};
-use serde_json::Value;
+use serde_json::{Map, Value};
 use std::collections::HashMap;
 use serde_json::Error as JsonError;
+use crate::command_resolution::command_model::Judge::NONE;
+use crate::model::MaybeMany::{Many, One};
 
 pub(crate) struct CommandResolution {
     pub database: String,
@@ -67,61 +69,51 @@ fn init_limit(request: &Request) -> Option<u32> {
     // 强制限制最大值
     Some(limit.min(MAX_LIMIT))
 }
-fn init_order_by(request: &Request) -> Option<Vec<HashMap<String, String>>> {
-    let order_by_value = request.args.get("order_by")?;
-    let array = order_by_value.as_array()?;
-
-    // 1. 先检查类型
-    if !array.iter().all(|item| item.is_object()) {
-        return None;
-    }
-
-    // 2. 尝试转换所有元素，这会得到一个 Result<Vec<T>, E>
-    let result: Result<Vec<_>, _> = array
-        .iter()
-        .map(|item| convert_value_to_hashmap(item)) // 产生 Iterator<Item = Result<HashMap, _>>
-        .collect();
-
-    // 3. 将 Result 转换为 Option (Ok 变 Some, Err 变 None)
-    result.ok()
-}
-fn convert_value_to_hashmap(value: &Value) -> Result<HashMap<String, String>, JsonError> {
-    // 直接尝试将 Value 反序列化为 HashMap<String, String>
-    serde_json::from_value(value.clone())
+fn init_order_by(request: &Request) -> Option<HashMap<String, String>> {
+    request
+        .args
+        .get("order_by")
+        .and_then(|val| val.as_object())
+        .map(|obj| {
+            obj.iter()
+                .filter_map(|(k, v)| {
+                    if let Value::String(str_val) = v {
+                        Some((k.clone(), str_val.clone()))
+                    } else {
+                        None
+                    }
+                })
+                .collect()
+        })
 }
 fn init_data(request: &Request) -> Option<MaybeMany> {
-    let data_value = request.args.get("data")?;
-    match data_value {
+    fn object_to_hashmap(obj: &Map<String, Value>) -> HashMap<String, Value> {
+        obj.iter().map(|(k, v)| (k.clone(), v.clone())).collect()
+    }
+    match &request.data {
         Value::Object(obj) => {
-            Some(MaybeMany::One(obj.iter().map(|(k, v)| (k.clone(), v.clone())).collect()))
+            let result = object_to_hashmap(obj);
+            Some(One(result))
         }
-        Value::Array(vec) => {
-            if vec.is_empty() {
+        Value::Array(arr) => {
+            if arr.is_empty() {
                 return None;
             }
-            let mut hashmaps = Vec::new();
-
-            for item in vec {
-                if let Value::Object(obj) = item {
-                    // 将 Map 转换为 HashMap
-                    let std_map: HashMap<String, Value> = obj
-                        .iter()
-                        .map(|(k, v)| (k.clone(), v.clone()))
-                        .collect();
-                    hashmaps.push(std_map);
-                } else {
-                    // 如果数组中包含非对象元素，返回 None
-                    return None;
-                }
+            if !arr.iter().all(|item| item.is_object()) {
+                return None;
             }
-
-            // 根据数量决定返回 One 还是 Many
-            match hashmaps.len() {
-                0 => None, // 理论上不会发生，因为上面检查过空值
-                1 => Some(MaybeMany::One(hashmaps.into_iter().next().unwrap())),
-                _ => Some(MaybeMany::Many(hashmaps)),
+            let items: Vec<HashMap<String, Value>> = arr
+                .iter()
+                .map(|item| {
+                    object_to_hashmap(item.as_object().unwrap())
+                })
+                .collect();
+            if items.len() == 1 {
+                Some(One(items.into_iter().next().unwrap()))
+            } else {
+                Some(Many(items))
             }
         }
-        _ => None
+        _ => None,
     }
 }
