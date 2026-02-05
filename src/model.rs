@@ -25,6 +25,7 @@ pub(crate) struct Request {
     pub command: String,
     pub database: DataBase,
     pub table: String,
+    pub columns: Option<Vec<String>>,
     pub args: HashMap<String, Value>,
     pub data: Value,
 }

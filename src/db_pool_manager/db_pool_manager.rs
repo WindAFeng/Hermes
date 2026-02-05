@@ -60,7 +60,6 @@ impl DBPoolManager {
                 None => return Err("Pool not found".into()),
             }
         };
-
         self.add_call_count(pool_name);
         // 获取增加后的当前值
         let current_global = self.add_and_get_global_call();
