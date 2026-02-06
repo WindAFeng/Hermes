@@ -18,5 +18,5 @@ pub fn local_timestamp() -> i64{
 }
 pub fn format_time()-> String{
     let now: DateTime<Local> = Local::now();
-    now.format("%Y-%m-%d %H:%M").to_string()
+    now.format("%Y-%m-%d %H:%M:%S").to_string()
 }
