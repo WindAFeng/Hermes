@@ -1,0 +1,11 @@
+[server.socket]
+host = "127.0.0.1"
+port = "6657"
+
+[server.websocket]
+host = "127.0.0.1"
+port = "6658"
+
+[web]
+host = "127.0.0.1"
+port = 8080
