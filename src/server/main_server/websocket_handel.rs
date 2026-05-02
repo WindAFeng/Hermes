@@ -1,4 +1,4 @@
-use futures_util::stream::SplitSink;
+use futures_util::stream::{SplitSink, SplitStream};
 use crate::errors::HermesError;
 use futures_util::{SinkExt, StreamExt};
 use tokio::net::TcpStream;
@@ -53,7 +53,7 @@ fn get_request(text: &str) -> Result<Request, HermesError> {
         }
     }
 }
-fn get_json_str(resp: &Response) -> Result<Option<Utf8Bytes>, HermesError> {
+fn to_json(resp: &Response) -> Result<Option<Utf8Bytes>, HermesError> {
     match serde_json::to_string(resp) {
         Ok(json) => Ok(Some(Utf8Bytes::from(json))),
         Err(e) => Err(HermesError::from(e))
@@ -69,40 +69,61 @@ async fn send_json(sender: &mut SplitSink<WebSocketStream<TcpStream>, Message>, 
         }
     }
 }
+async fn websocket_connect_handle(receiver: &mut SplitStream<WebSocketStream<TcpStream>>, sender: &mut SplitSink<WebSocketStream<TcpStream>, Message>) -> Result<(), HermesError> {
+    if let Some(message_result) = receiver.next().await {
+        let message = match get_message(message_result) {
+            Ok(Some(message)) => message,
+            _ => return Err(HermesError::Network("Can't get message".to_string()))
+        };
+        if message.is_text() {
+            check_message_is_text(&message, sender).await
+        }else if message.is_close() {
+            return Err(HermesError::Internal("Can't close websocket".to_string()));
+        }
+        else {
+            return Err(HermesError::Internal("Can't send message to websocket".to_string()));
+        }
+    }
+    else {
+        Err(HermesError::Internal("Can't get message from websocket".to_string()))
+    }
+}
+async fn check_message_is_text(message: &Message, sender: &mut SplitSink<WebSocketStream<TcpStream>, Message>)  -> Result<(), HermesError> {
+    let text = match to_str(message) {
+        Ok(text) => text,
+        Err(error) => return Err(HermesError::from(error))
+    };
+    let request = match get_request(text) {
+        Ok(request) => request,
+        Err(error) => return Err(HermesError::from(error))
+    };
+    let bytes = match send_response(&request).await {
+        Ok(bytes) => bytes,
+        Err(error) => return Err(HermesError::from(error))
+    };
+    if let Err(error) = send_json(sender, bytes).await {
+        return Err(HermesError::from(error));
+    }
+    Ok(())
+}
+async fn send_response(req: &Request) -> Result<Utf8Bytes, HermesError> {
+    let resp = Response {
+        code: ResponseCodeType::Success,
+        message: ResponseMessageType::Success,
+        data: None,
+    };
+    match to_json(&resp) {
+        Ok(Some(json_str)) => Ok(json_str),
+        _ => return Err(HermesError::Internal("Can't get response json".to_string()))
+    }
+}
 pub async fn websocket_handel(stream: TcpStream) -> Result<(), HermesError> {
     let ws_stream = get_ws_stream(stream).await?;
     let (mut sender, mut receiver) = ws_stream.split();
     loop {
-        if let Some(message_result) = receiver.next().await {
-            let message = match get_message(message_result) {
-                Ok(Some(message)) => message,
-                _ => break
-            };
-            if message.is_text() {
-                let text = match to_str(&message) {
-                    Ok(text) => text,
-                    Err(_) => break
-                };
-                let request = match get_request(text) {
-                    Ok(request) => request,
-                    Err(_) => break
-                };
-                let resp = Response {
-                    code: ResponseCodeType::Success,
-                    message: ResponseMessageType::Success,
-                    data: None,
-                };
-                let json_str = match get_json_str(&resp) {
-                    Ok(Some(json_str)) => json_str,
-                    _ => break
-                };
-                if let Err(_) = send_json(&mut sender, json_str).await {
-                    break;
-                }
-            }else if message.is_close() {
-                break;
-            }
-        }
+        return match websocket_connect_handle(&mut receiver, &mut sender).await {
+            Ok(_) => Ok(()),
+            Err(_) => Err(HermesError::Network("Error while connecting to websocket".to_string()))
+        };
     }
-    Ok(())
 }

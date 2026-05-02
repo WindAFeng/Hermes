@@ -9,13 +9,15 @@ use crate::models::ingest_model::response_code_type::ResponseCodeType;
 
 pub struct RedisHandle{
     command: RequestAssistant,
+    database_name: Option<String>,
     args: String,
     data: Option<DataWrapper>,
 }
 impl RedisHandle{
-    pub fn new(command: RequestAssistant, args: String, data: Option<DataWrapper>) -> Self{
+    pub fn new(command: RequestAssistant,database_name: Option<String>, args: String, data: Option<DataWrapper>) -> Self{
         Self {
             command,
+            database_name,
             args,
             data,
         }
@@ -43,7 +45,7 @@ impl RedisHandle{
                 })
             },
             RequestAssistant::Add => {
-                add_command_handle(args, self.get_data()?).await
+                add_command_handle(args, self.get_data()?, self.database_name.clone()).await
             },
             RequestAssistant::Update => {
                 Ok(Response {
@@ -58,7 +60,7 @@ impl RedisHandle{
                     message: ResponseMessageType::Error(String::from("Command not found.")),
                     data: None,
                 })
-            }
+            },
         }
     }
     pub async fn to_response(&self) -> Result<Response, HermesError> {

@@ -6,7 +6,7 @@ pub struct WebsocketServer {
 }
 impl WebsocketServer {
     pub async fn new(host: &str, port: &str) -> Result<WebsocketServer, HermesError>{
-        match Tcp::new(host, port).await {
+        match Tcp::new(host, port, "WebSocket").await {
             Ok(tcp_server) => {
                 Ok(WebsocketServer{
                     tcp_server

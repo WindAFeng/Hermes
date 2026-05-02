@@ -8,6 +8,7 @@ pub mod utils;
 pub mod server;
 pub mod config;
 pub mod command_handle;
+pub mod default_config;
 
 #[tokio::main]
 async fn main() -> Result<(), HermesError> {

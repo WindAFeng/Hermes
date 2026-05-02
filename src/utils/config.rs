@@ -1,9 +1,9 @@
-use crate::utils::log::{info, warn, error};
+use crate::utils::log::{error, info, warn};
 use crate::config::Config;
 use std::fs;
 use std::sync::Arc;
 use std::sync::OnceLock;
-
+use crate::default_config::DefaultConfig;
 
 // --- 全局变量 ---
 const CONFIG_FILE: &str = "Config.toml";
@@ -18,11 +18,24 @@ pub fn init_config() {
         if let Ok(parsed) = toml::from_str::<Config>(&content) {
             info("loaded config");
             config = parsed; // 文件配置优先级高
-        } else {
-            warn("cannot parse config file");
+        } else if let Err(error) = toml::from_str::<Config>(&content) {
+            warn(format!("error while parsing config: {}", error).as_str());
         }
     } else {
-        warn("not found config file");
+        let toml_str = match toml::to_string_pretty(&DefaultConfig::default()) {
+            Ok(toml_str) => toml_str,
+            Err(e) => {
+                error(format!("{}", e.to_string()));
+                return ()
+            },
+        };
+        let write = fs::write(CONFIG_FILE, toml_str);
+        match write {
+            Ok(_) => (),
+            Err(error) => {
+                warn(error.to_string());
+            }
+        }
     }
 
     // 3. 设置全局
@@ -32,7 +45,16 @@ pub fn init_config() {
 // --- 获取函数 (不变) ---
 pub fn get_config() -> Arc<Config> {
     CONFIG.get().cloned().unwrap_or_else(|| {
-        error("配置未初始化");
-        Config::default().into()
+        Arc::new(Config::default())
     })
+}
+#[cfg(test)]
+mod test {
+    use super::*;
+    #[test]
+    fn test_get_config() {
+        init_config();
+        let config = get_config();
+        println!("{:?}", config);
+    }
 }

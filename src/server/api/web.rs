@@ -19,7 +19,8 @@ impl WebApp{
             App::new().configure(routers::config)
         })
             .bind((self.host.clone(), self.port))?;
-        println!("Web server listening on: http://{}:{}", self.host, self.port);
+        println!("Web server listening on:");
+        println!(" - http://{}:{}", self.host, self.port);
         web.run().await?;
         Ok(())
     }

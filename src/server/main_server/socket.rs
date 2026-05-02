@@ -6,7 +6,7 @@ pub struct SocketServer{
 }
 impl SocketServer{
     pub async fn new(host: &str, port: &str) -> Result<SocketServer, HermesError>{
-        match Tcp::new(host, port).await {
+        match Tcp::new(host, port, "Socket").await {
             Ok(tcp_server) => {
                 Ok(SocketServer {
                     tcp_server

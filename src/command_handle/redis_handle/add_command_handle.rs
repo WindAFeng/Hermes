@@ -9,13 +9,39 @@ use crate::models::ingest_model::response_code_type::ResponseCodeType;
 use crate::models::rust_type::RustType;
 use crate::redis_lib::create_connect::create_connect;
 use crate::redis_lib::redis_execute::RedisExecute;
-pub async fn add_command_handle(args: RedisArgs, data: DataWrapper) -> Result<Response, HermesError> {
-    let value_type = match args.type_ {
-        Some(type_) => type_,
+use crate::utils::config::get_config;
+
+pub async fn add_command_handle(args: RedisArgs, data: DataWrapper, database_name: Option<String>) -> Result<Response, HermesError> {
+    let config = get_config();
+    let db_name = match database_name {
+        Some(db_name) => db_name,
+        None => {
+            println!("有傻逼不写db_name,开始寻找最高优先级的redis数据库");
+            let redis = config.database.redis.clone();
+            if redis.is_empty(){
+                return Err(HermesError::Internal("Not Found Redis Database".to_string()))
+            }
+            let important = redis.iter()
+                .min_by_key(|(_, config)| config.important)
+                .map(|(k, _)| k);
+            println!("终于他妈找到了: {:?}", important);
+            match important {
+                Some(k) => k.clone(),
+                None => return Err(HermesError::Internal("Not Found Redis Database".to_string()))
+            }
+        }
+    };
+    let host = config.database.redis.get(&db_name).unwrap().host.clone();
+    let port = match config.database.redis.get(&db_name).unwrap().port{
+        Some(p) => p.to_string(),
+        None => "6379".to_string()
+    };
+    let value_type = match args.value_type {
+        Some(value_type) => value_type,
         None => return Ok(
             Response {
                 code: ResponseCodeType::ArgNotFound,
-                message: ResponseMessageType::Error(HermesError::Internal("Not Found arg 'type'".to_string()).to_string()),
+                message: ResponseMessageType::Error(HermesError::Internal("Not Found arg 'value_type'".to_string()).to_string()),
                 data: None,
             }
         )
@@ -29,7 +55,7 @@ pub async fn add_command_handle(args: RedisArgs, data: DataWrapper) -> Result<Re
             for item in data_list {
                 for (key, val) in item {
                     let value = RustType::from_value(val).to_string();
-                    let connect = match create_connect().await {
+                    let connect = match create_connect(&host, &port).await {
                         Ok(connect) => connect,
                         Err(err) => return Ok(
                             Response {
@@ -44,7 +70,9 @@ pub async fn add_command_handle(args: RedisArgs, data: DataWrapper) -> Result<Re
                 }
             }
         }
-        HermesTypes::List => todo!(),
+        HermesTypes::List => {
+            
+        },
         HermesTypes::HashMap => todo!(),
         HermesTypes::None => todo!(),
         HermesTypes::Bool => todo!()

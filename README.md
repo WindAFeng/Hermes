@@ -2,7 +2,7 @@
 
 > 一个基于 Rust + Tokio + Actix-web 构建的高性能、多协议数据库网关与中间件
 
-[![Rust](https://img.shields.io/badge/Rust-1.80%2B-orange?logo=rust)](https://www.rust-lang.org/)[![Actix Web](https://img.shields.io/badge/Actix_Web-4.x-blue?logo=rust)](https://actix.rs/)[![License](https://img.shields.io/badge/license-MIT-green)](LICENSE)
+[![Rust](https://img.shields.io/badge/Rust-1.80%2B-orange?logo=rust)](https://www.rust-lang.org/)[![Actix Web](https://img.shields.io/badge/Actix_Web-4.x-blue?logo=rust)](https://actix.rs/)[![License](https://img.shields.io/badge/license-MIT-green)](LICENSE.txt)
 
 ---
 
@@ -32,6 +32,19 @@
 - ✅**数据网(当前版本未实现)：**基于数据调动次数实现的动态数据预热系统
 
 ---
+
+### 支持的指令
+
+| 指令     | 功能说明                                               |
+| -------- | ------------------------------------------------------ |
+| `Add`    | 插入新数据（单条或多条），仅当数据不存在时生效         |
+| `Get`    | 批量查询数据，支持复杂条件与迭代返回（List 格式）      |
+| `Update` | 更新已有数据，支持字段追加、修改、自增/自减            |
+| `Delete` | 批量删除，支持复杂条件表达式                           |
+| `Clear`  | **手动清除** Hermes 内存缓存（全局或指定键）           |
+| `Set`    | **手动设置** 缓存内容（用于预热或调试）                |
+| `Use`    | 调用数据库特有功能（如 Redis Pub/Sub、MySQL 触发器等） |
+| `Config` | **热更新**部分配置项（如缓存 TTL、日志级别等）         |
 
 ## 🚀 快速开始
 
@@ -85,7 +98,7 @@ npm run dev
 
 ## 📄 许可证
 
-本项目采用 [MIT 许可证](LICENSE)。
+本项目采用 [MIT 许可证](LICENSE.txt)。
 
 ---
 

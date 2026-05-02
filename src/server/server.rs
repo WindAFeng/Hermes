@@ -16,9 +16,9 @@ impl MainServer {
         let server_config = &get_config().server;
         MainServer {
             socket_host: server_config.socket.host.clone(),
-            socket_port: server_config.socket.port.clone(),
+            socket_port: server_config.socket.port.clone().to_string(),
             websocket_host: server_config.websocket.host.clone(),
-            websocket_port: server_config.websocket.port.clone(),
+            websocket_port: server_config.websocket.port.clone().to_string(),
         }
     }
 

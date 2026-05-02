@@ -21,3 +21,16 @@ pub fn get_local_host() -> Result<String, HermesError> {
         }
     }
 }
+#[cfg(test)]
+mod tests {
+    use super::*; // 引入当前模块的私有/公有项
+
+    #[test]
+    fn test() {
+        let local_host = match get_local_host() {
+            Ok(host) => host,
+            Err(e) => panic!("{}", e),
+        };
+        println!("{}", local_host);
+    }
+}

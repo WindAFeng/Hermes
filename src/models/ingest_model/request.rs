@@ -8,6 +8,7 @@ use serde_json::Value;
 pub struct Request {
     pub command: RequestAssistant,
     pub database: DatabaseType,
+    pub db_name: Option<String>,
     pub args: Option<HashMap<String, Value>>,
-    pub data: Option<Value>,
+    pub data: Option<Value>
 }

@@ -1,13 +1,10 @@
 use serde::{Deserialize, Serialize};
 
 #[derive(Serialize, Deserialize, Debug, Clone)]
+#[serde(rename_all = "lowercase")]
 pub enum RequestAssistant {
-    #[serde(rename = "ADD")]
     Add,
-    #[serde(rename = "DELETE")]
     Delete,
-    #[serde(rename = "UPDATE")]
     Update,
-    #[serde(rename = "GET")]
     Get,
 }
