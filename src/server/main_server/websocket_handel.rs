@@ -1,6 +1,5 @@
-use futures_util::stream::{SplitSink, SplitStream};
 use crate::errors::HermesError;
-use futures_util::{SinkExt, StreamExt};
+use futures_util::{stream::{SplitSink, SplitStream}, SinkExt, StreamExt};
 use tokio::net::TcpStream;
 use tokio_tungstenite::{WebSocketStream, accept_async};
 use tokio_tungstenite::tungstenite::{Message, Error};

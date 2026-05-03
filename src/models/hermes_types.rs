@@ -1,11 +1,11 @@
 use serde::{Deserialize, Serialize};
 
 
-#[derive(Deserialize, Serialize, Debug, PartialEq)]
+#[derive(Deserialize, Serialize, Debug, PartialEq, Clone)]
 #[serde(rename_all = "lowercase")]
 pub enum HermesTypes {
     String,
-    Integer,
+    Int,
     UInt,
     Float,
     Bool,

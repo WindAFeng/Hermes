@@ -40,10 +40,10 @@ impl RedisHandle{
         };
         match &self.command {
             DatabaseCommandType::Get => {
-                redis_get_command_handle(args, self.get_data()?).await
+                redis_get_command_handle(self.database_name.clone(), args).await
             },
             DatabaseCommandType::Add => {
-                redis_add_command_handle(args, self.get_data()?, self.database_name.clone()).await
+                redis_add_command_handle(self.database_name.clone(), args, self.get_data()?).await
             },
             DatabaseCommandType::Update => {
                 redis_update_command_handle().await

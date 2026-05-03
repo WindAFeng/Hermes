@@ -6,3 +6,4 @@ pub mod hermes_types;
 pub mod rust_type;
 pub mod default_config;
 pub mod config;
+pub mod database_types;

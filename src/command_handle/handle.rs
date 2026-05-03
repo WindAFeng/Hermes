@@ -2,7 +2,7 @@ use crate::command_handle::redis_handle::redis_handle::RedisHandle;
 use crate::errors::HermesError;
 use crate::models::ingest_model::data_wrapper::DataWrapper;
 use crate::models::ingest_model::database_command_type::DatabaseCommandType;
-use crate::models::ingest_model::database_type::DatabaseType;
+use crate::models::ingest_model::request_database_type::RequestDatabaseType;
 use crate::models::ingest_model::ingest_command_type::IngestCommandType;
 use crate::models::ingest_model::request::Request;
 use crate::models::ingest_model::response::Response;
@@ -49,10 +49,10 @@ impl CommandHandle {
         let args = self.request.args_to_json()?;
         let data = self.request.get_data()?;
         match &self.request.database {
-            DatabaseType::Redis => redis_handle(command, self.request.db_name.clone(), args, data).await,
-            DatabaseType::MySql => mysql_handle().await,
-            DatabaseType::MongoDB => mongodb_handle().await,
-            DatabaseType::PostgreSQL => postgresql_handle().await,
+            RequestDatabaseType::Redis => redis_handle(command, self.request.db_name.clone(), args, data).await,
+            RequestDatabaseType::MySql => mysql_handle().await,
+            RequestDatabaseType::MongoDB => mongodb_handle().await,
+            RequestDatabaseType::PostgreSQL => postgresql_handle().await,
         }
     }
 

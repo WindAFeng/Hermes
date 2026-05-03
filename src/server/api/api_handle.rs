@@ -1,8 +1,7 @@
 use std::collections::HashMap;
 use actix_web::HttpResponse;
 use crate::errors::HermesError;
-use crate::models::api_model::{health::Health, };
-use crate::models::api_model::database_state::DatabaseState;
+use crate::models::api_model::{health::Health, database_state::DatabaseState};
 use crate::utils::time::timestamp;
 
 pub async fn health() -> Result<HttpResponse, HermesError> {
