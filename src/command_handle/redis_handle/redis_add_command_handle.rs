@@ -1,5 +1,5 @@
 use crate::errors::HermesError;
-use crate::models::handle_modle::redis_handle_modle::redis_args_modle::RedisArgs;
+use crate::models::handle_modle::redis_handle_modle::redis_handle_args_model::RedisArgs;
 use crate::models::hermes_types::HermesTypes;
 use crate::models::ingest_model::data_wrapper::DataWrapper;
 use crate::models::ingest_model::data_wrapper::DataWrapper::{One, Many};
@@ -11,7 +11,7 @@ use crate::redis_lib::create_connect::create_connect;
 use crate::redis_lib::redis_execute::RedisExecute;
 use crate::utils::config::get_config;
 
-pub async fn add_command_handle(args: RedisArgs, data: DataWrapper, database_name: Option<String>) -> Result<Response, HermesError> {
+pub async fn redis_add_command_handle(args: RedisArgs, data: DataWrapper, database_name: Option<String>) -> Result<Response, HermesError> {
     let config = get_config();
     let db_name = match database_name {
         Some(db_name) => db_name,
@@ -51,7 +51,7 @@ pub async fn add_command_handle(args: RedisArgs, data: DataWrapper, database_nam
         Many(m) => m,
     };
     match value_type {
-        HermesTypes::String | HermesTypes::Integer | HermesTypes::UnsignedInteger | HermesTypes::Float => {
+        HermesTypes::String | HermesTypes::Integer | HermesTypes::UInt | HermesTypes::Float => {
             for item in data_list {
                 for (key, val) in item {
                     let value = RustType::from_value(val).to_string();

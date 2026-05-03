@@ -36,12 +36,8 @@ pub async fn socket_handel(mut socket: TcpStream) -> Result<(), HermesError> {
                 continue;
             }
         };
-        let handle = CommandHandle::new(req);
-        let resp = match handle.get().await {
-            Ok(r) => r,
-            Err(e) => return Err(e),
-        };
-        let resp_bytes = serde_json::to_vec(&resp)?;
+        let resp = CommandHandle::new(req).get().await?;
+        let resp_bytes = resp.to_bytes()?;
         if let Err(e) = socket.write_all(&resp_bytes).await {
             log::error(format!("TCP Write Error: {}", e));
         }

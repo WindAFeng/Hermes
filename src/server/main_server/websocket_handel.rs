@@ -37,10 +37,7 @@ fn get_message(message_result: Result<Message, Error>) ->Result<Option<Message>,
     }
 }
 fn to_str(message: &Message) -> Result<&str, HermesError> {
-    match message.to_text() {
-        Ok(text) => Ok(text),
-        Err(e) => Err(HermesError::from(e))
-    }
+    Ok(message.to_text()?)
 }
 fn get_request(text: &str) -> Result<Request, HermesError> {
     match serde_json::from_str::<Request>(text) {
@@ -114,7 +111,7 @@ async fn send_response(req: &Request) -> Result<Utf8Bytes, HermesError> {
     };
     match to_json(&resp) {
         Ok(Some(json_str)) => Ok(json_str),
-        _ => return Err(HermesError::Internal("Can't get response json".to_string()))
+        _ => Err(HermesError::Internal("Can't get response json".to_string()))
     }
 }
 pub async fn websocket_handel(stream: TcpStream) -> Result<(), HermesError> {

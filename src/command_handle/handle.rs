@@ -1,14 +1,43 @@
 use crate::command_handle::redis_handle::redis_handle::RedisHandle;
 use crate::errors::HermesError;
 use crate::models::ingest_model::data_wrapper::DataWrapper;
+use crate::models::ingest_model::database_command_type::DatabaseCommandType;
 use crate::models::ingest_model::database_type::DatabaseType;
+use crate::models::ingest_model::ingest_command_type::IngestCommandType;
 use crate::models::ingest_model::request::Request;
 use crate::models::ingest_model::response::Response;
 use crate::models::ingest_model::response_code_type::ResponseCodeType;
 use crate::models::ingest_model::response_message_type::ResponseMessageType;
-use serde_json::Value;
-use std::collections::HashMap;
-
+async fn redis_handle(command: &DatabaseCommandType, database_name: Option<String>, args: String, data: Option<DataWrapper>) -> Result<Response, HermesError>{
+    let redis_handle = RedisHandle::new(
+        command.clone(),
+        database_name.clone(),
+        args,
+        data,
+    );
+    redis_handle.to_response().await
+}
+async fn mysql_handle() -> Result<Response, HermesError>{
+    Ok(Response {
+        code: ResponseCodeType::Success,
+        message: ResponseMessageType::Success,
+        data: None,
+    })
+}
+async fn postgresql_handle() -> Result<Response, HermesError>{
+    Ok(Response {
+        code: ResponseCodeType::Success,
+        message: ResponseMessageType::Success,
+        data: None,
+    })
+}
+async fn mongodb_handle() -> Result<Response, HermesError>{
+    Ok(Response {
+        code: ResponseCodeType::Success,
+        message: ResponseMessageType::Success,
+        data: None,
+    })
+}
 pub struct CommandHandle {
     request: Request,
 }
@@ -16,80 +45,29 @@ impl CommandHandle {
     pub fn new(request: Request) -> Self {
         CommandHandle { request }
     }
-    fn args_to_json(&self) -> Result<String, HermesError> {
-        let args = match &self.request.args {
-            Some(args) => args,
-            None => return Err(HermesError::Internal("Not Found Args".to_string())),
-        };
-        match serde_json::to_string(&args) {
-            Ok(json) => Ok(json),
-            Err(error) => Err(HermesError::from(error)),
-        }
-    }
-    fn get_data(&self) -> Result<Option<DataWrapper>, HermesError> {
-        let value = &self.request.data;
-        match value {
-            Some(Value::Object(map)) => {
-                let hashmap: HashMap<String, Value> =
-                    map.iter().map(|(k, v)| (k.clone(), v.clone())).collect();
-                Ok(Some(DataWrapper::One(hashmap)))
-            }
-            Some(Value::Array(vec)) => {
-                let mut result = Vec::with_capacity(vec.len());
-                for item in vec {
-                    match item {
-                        Value::Object(obj) => {
-                            let hashmap: HashMap<String, Value> =
-                                obj.iter().map(|(k, v)| (k.clone(), v.clone())).collect();
-                            result.push(hashmap);
-                        }
-                        _ => {
-                            return Err(HermesError::Internal("Not Found Data".to_string()));
-                        }
-                    }
-                }
-                Ok(Some(DataWrapper::Many(result)))
-            }
-            _ => Err(HermesError::Internal("Wrong Data type".to_string())),
-        }
-    }
-    async fn database_match(&self) -> Result<Response, HermesError> {
-        let args = match self.args_to_json() {
-            Ok(json) => json,
-            Err(error) => return Err(HermesError::from(error)),
-        };
-        let data = match self.get_data() {
-            Ok(data) => data,
-            Err(error) => return Err(HermesError::from(error)),
-        };
+    async fn database_match(&self, command: &DatabaseCommandType) -> Result<Response, HermesError> {
+        let args = self.request.args_to_json()?;
+        let data = self.request.get_data()?;
         match &self.request.database {
-            DatabaseType::Redis => {
-                let redis_handle = RedisHandle::new(
-                    self.request.command.clone(),
-                    self.request.db_name.clone(),
-                    args,
-                    data,
-                );
-                redis_handle.to_response().await
-            }
-            DatabaseType::MySql => Ok(Response {
-                code: ResponseCodeType::Success,
-                message: ResponseMessageType::Success,
-                data: None,
-            }),
-            DatabaseType::MongoDB => Ok(Response {
-                code: ResponseCodeType::Success,
-                message: ResponseMessageType::Success,
-                data: None,
-            }),
-            DatabaseType::PostgreSQL => Ok(Response {
-                code: ResponseCodeType::Success,
-                message: ResponseMessageType::Success,
-                data: None,
-            }),
+            DatabaseType::Redis => redis_handle(command, self.request.db_name.clone(), args, data).await,
+            DatabaseType::MySql => mysql_handle().await,
+            DatabaseType::MongoDB => mongodb_handle().await,
+            DatabaseType::PostgreSQL => postgresql_handle().await,
         }
     }
+
     pub async fn get(&self) -> Result<Response, HermesError> {
-        self.database_match().await
+        match &self.request.split() {
+            IngestCommandType::Hermes(command) => {
+                Ok(Response {
+                    code: ResponseCodeType::Success,
+                    message: ResponseMessageType::Success,
+                    data: None,
+                })
+            }
+            IngestCommandType::Database(command) => {
+                self.database_match(command).await
+            }
+        }
     }
 }

@@ -6,7 +6,7 @@ use serde::{Deserialize, Serialize};
 pub enum HermesTypes {
     String,
     Integer,
-    UnsignedInteger,
+    UInt,
     Float,
     Bool,
     HashMap,

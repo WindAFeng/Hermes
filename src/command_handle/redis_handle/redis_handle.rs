@@ -1,20 +1,22 @@
-use crate::command_handle::redis_handle::add_command_handle::add_command_handle;
+use crate::command_handle::redis_handle::redis_add_command_handle::redis_add_command_handle;
+use crate::command_handle::redis_handle::redis_get_command_handle::redis_get_command_handle;
+use crate::command_handle::redis_handle::redis_update_command_handle::redis_update_command_handle;
+use crate::command_handle::redis_handle::redis_delete_command_handle::redis_delete_command_handle;
+use crate::command_handle::redis_handle::redis_use_command_handle::redis_use_command_handle;
 use crate::errors::HermesError;
-use crate::models::handle_modle::redis_handle_modle::redis_args_modle::RedisArgs;
+use crate::models::handle_modle::redis_handle_modle::redis_handle_args_model::RedisArgs;
 use crate::models::ingest_model::data_wrapper::DataWrapper;
-use crate::models::ingest_model::response_message_type::{ResponseMessageType};
-use crate::models::ingest_model::request_assistant::RequestAssistant;
+use crate::models::ingest_model::database_command_type::DatabaseCommandType;
 use crate::models::ingest_model::response::Response;
-use crate::models::ingest_model::response_code_type::ResponseCodeType;
 
 pub struct RedisHandle{
-    command: RequestAssistant,
+    command: DatabaseCommandType,
     database_name: Option<String>,
     args: String,
     data: Option<DataWrapper>,
 }
 impl RedisHandle{
-    pub fn new(command: RequestAssistant,database_name: Option<String>, args: String, data: Option<DataWrapper>) -> Self{
+    pub fn new(command: DatabaseCommandType,database_name: Option<String>, args: String, data: Option<DataWrapper>) -> Self{
         Self {
             command,
             database_name,
@@ -37,30 +39,21 @@ impl RedisHandle{
             Err(e) => return Err(e)
         };
         match &self.command {
-            RequestAssistant::Get => {
-                Ok(Response {
-                    code: ResponseCodeType::Success,
-                    message: ResponseMessageType::Error(String::from("Command not found.")),
-                    data: None,
-                })
+            DatabaseCommandType::Get => {
+                redis_get_command_handle(args, self.get_data()?).await
             },
-            RequestAssistant::Add => {
-                add_command_handle(args, self.get_data()?, self.database_name.clone()).await
+            DatabaseCommandType::Add => {
+                redis_add_command_handle(args, self.get_data()?, self.database_name.clone()).await
             },
-            RequestAssistant::Update => {
-                Ok(Response {
-                    code: ResponseCodeType::Success,
-                    message: ResponseMessageType::Error(String::from("Command not found.")),
-                    data: None,
-                })
+            DatabaseCommandType::Update => {
+                redis_update_command_handle().await
             },
-            RequestAssistant::Delete => {
-                Ok(Response {
-                    code: ResponseCodeType::Success,
-                    message: ResponseMessageType::Error(String::from("Command not found.")),
-                    data: None,
-                })
-            },
+            DatabaseCommandType::Delete => {
+                redis_delete_command_handle().await
+            }
+            DatabaseCommandType::Use => {
+                redis_use_command_handle().await
+            }
         }
     }
     pub async fn to_response(&self) -> Result<Response, HermesError> {

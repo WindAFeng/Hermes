@@ -23,7 +23,7 @@ pub fn get_local_host() -> Result<String, HermesError> {
 }
 #[cfg(test)]
 mod tests {
-    use super::*; // 引入当前模块的私有/公有项
+    use super::*;
 
     #[test]
     fn test() {

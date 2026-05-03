@@ -1,7 +1,6 @@
 use actix_web::{ResponseError, http::StatusCode};
 use redis::RedisError;
 use serde_json;
-use serde_json::json;
 use thiserror::Error;
 use tokio_tungstenite;
 
@@ -23,7 +22,7 @@ pub enum HermesError {
     InvalidOperation { op: String },
 
     #[error("Config load error: {0}")]
-    Config(String),
+    Config(#[from] toml::de::Error),
 
     #[error("Network error: {0}")]
     Network(String),
@@ -52,18 +51,5 @@ impl ResponseError for HermesError {
             HermesError::Network(_) => StatusCode::SERVICE_UNAVAILABLE,
             HermesError::RedisPool(_) => StatusCode::INTERNAL_SERVER_ERROR,
         }
-    }
-
-    fn error_response(&self) -> actix_web::HttpResponse {
-        let json = json!({
-            "success": false,
-            "code": self.status_code().as_u16(),
-            "message": self.to_string(),
-            "data": null
-        });
-
-        actix_web::HttpResponse::build(self.status_code())
-            .content_type("application/json")
-            .body(json.to_string())
     }
 }

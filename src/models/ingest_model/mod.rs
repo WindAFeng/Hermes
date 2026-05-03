@@ -5,3 +5,6 @@ pub mod request_assistant;
 pub mod database_type;
 pub mod response_code_type;
 pub mod response_message_type;
+pub mod ingest_command_type;
+pub mod database_command_type;
+pub mod hermes_command_type;

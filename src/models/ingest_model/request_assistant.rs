@@ -7,4 +7,8 @@ pub enum RequestAssistant {
     Delete,
     Update,
     Get,
+    Use,
+    Config,
+    Clear,
+    Set
 }
