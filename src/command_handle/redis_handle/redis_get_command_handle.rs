@@ -1,7 +1,7 @@
 use crate::command_handle::get_db_name::get_db_name;
 use crate::errors::HermesError;
 use crate::models::database_types::DatabaseTypes;
-use crate::models::handle_modle::redis_handle_modle::redis_handle_args_model::RedisArgs;
+use crate::models::handle_modle::redis_handle_modle::redis_handle_args_model::RedisHandleArgs;
 use crate::models::ingest_model::data_wrapper::DataWrapper;
 use crate::models::ingest_model::response::Response;
 use crate::models::ingest_model::response_code_type::ResponseCodeType;
@@ -18,7 +18,8 @@ async fn get_value(key: &str, host: &str, port: &str) -> Result<String, HermesEr
     let mut redis_commands = RedisStringExecute::new(connect);
     match redis_commands.get(key).await {
         Ok(Some(value)) => Ok(value),
-        _ => Err(HermesError::Internal("Key not found".to_string())),
+        Ok(None) => Err(HermesError::KeyNotFound(key.to_string())),
+        Err(e) => Err(e),  // 保留原始错误
     }
 }
 async fn get_values(key: &Vec<String>, host: &str, port: &str) -> Result<Vec<String>, HermesError> {
@@ -42,7 +43,7 @@ fn to_value(hashmap_list: &Vec<HashMap<String, String>>) -> Vec<HashMap<String, 
 }
 pub async fn redis_get_command_handle(
     database_name: Option<String>,
-    args: RedisArgs,
+    args: RedisHandleArgs,
 ) -> Result<Response, HermesError> {
     let config = get_config();
     let db_name = get_db_name(DatabaseTypes::Redis, database_name, &config)?;
@@ -51,7 +52,7 @@ pub async fn redis_get_command_handle(
     let keys = args.get_keys()?;
     match keys.len() {
         0 => Ok(Response {
-            code: ResponseCodeType::NotFoundKey,
+            code: ResponseCodeType::BadRequest,
             message: ResponseMessageType::Error("Can't found data".to_string()),
             data: None,
         }),
@@ -69,11 +70,11 @@ pub async fn redis_get_command_handle(
         _ => {
             let values = get_values(&keys, &host, &port).await?;
             let result: Vec<HashMap<String, String>> = keys
-                .into_iter()
-                .zip(values.into_iter())
+                .iter()
+                .zip(values.iter())
                 .map(|(k, v)| {
                     let mut map = HashMap::new();
-                    map.insert(k, v);
+                    map.insert(k.clone(), v.clone());
                     map
                 })
                 .collect();

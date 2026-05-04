@@ -2,6 +2,7 @@
 macro_rules! init_enum {
     ($(#[$meta:meta])* $vis:vis enum $name:ident { $($variant:ident),* $(,)? }) => {
         $(#[$meta])*
+        #[derive(Eq, Hash, PartialEq)]
         $vis enum $name {
             $($variant,)*
         }

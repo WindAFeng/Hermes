@@ -1,7 +1,6 @@
 use crate::init_enum;
-
 init_enum! {
-    #[derive(Debug, Clone, PartialEq)]
+    #[derive(Debug, Clone)]
     pub enum RedisCommands {
         // Key Command
         DEL,

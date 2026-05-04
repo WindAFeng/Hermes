@@ -14,10 +14,19 @@ impl RedisKeyExecute {
     pub fn new(connect: MultiplexedConnection) -> Self {
         Self { exe: RedisExecute::new(connect) }
     }
-    pub async fn del(&mut self,key: String) -> Result<bool, HermesError> {
+    pub async fn del(&mut self, keys: &[String]) -> Result<usize, HermesError> {
+        if keys.is_empty() {
+            return Ok(0);
+        }
         // 删除指定 key
-        self.exe.execute::<bool>(RedisCommands::DEL, RedisValueFormat::OnlyKey(key))
-            .await
+        let deleted_count: usize = self
+            .exe
+            .execute::<usize>(
+                RedisCommands::DEL,
+                RedisValueFormat::Items(keys.to_vec()),
+            )
+            .await?;
+        Ok(deleted_count)
     }
     pub async fn dump(&mut self,key: String) -> Result<String, HermesError> {
         // 返回 base64 格式的字符串
@@ -78,4 +87,5 @@ impl RedisKeyExecute {
         };
         self.exe.execute(RedisCommands::KEYS, RedisValueFormat::OnlyKey(patterns))
             .await
-    }}
+    }
+}

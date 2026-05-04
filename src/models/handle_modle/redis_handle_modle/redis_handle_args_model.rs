@@ -2,11 +2,12 @@ use serde::Deserialize;
 use crate::errors::HermesError;
 use crate::models::hermes_types::HermesTypes;
 #[derive(Deserialize, Debug)]
-pub struct RedisArgs{
+pub struct RedisHandleArgs{
     pub value_type: Option<HermesTypes>,
     pub keys: Option<Vec<String>>,
+    pub ret_del_data: Option<bool>
 }
-impl RedisArgs{
+impl RedisHandleArgs{
     fn return_error(&self, lack_arg: &str) -> HermesError{
         HermesError::Internal(format!("Not Found arg '{}'", lack_arg))
     }
@@ -24,6 +25,12 @@ impl RedisArgs{
             None => Err(
                 self.return_error("keys")
             )
+        }
+    }
+    pub fn get_ret_del_data(&self)->bool{
+        match &self.ret_del_data {
+            Some(ret_del_data) => ret_del_data.clone(),
+            None => false
         }
     }
 }

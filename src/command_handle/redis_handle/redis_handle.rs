@@ -4,7 +4,7 @@ use crate::command_handle::redis_handle::redis_update_command_handle::redis_upda
 use crate::command_handle::redis_handle::redis_delete_command_handle::redis_delete_command_handle;
 use crate::command_handle::redis_handle::redis_use_command_handle::redis_use_command_handle;
 use crate::errors::HermesError;
-use crate::models::handle_modle::redis_handle_modle::redis_handle_args_model::RedisArgs;
+use crate::models::handle_modle::redis_handle_modle::redis_handle_args_model::RedisHandleArgs;
 use crate::models::ingest_model::data_wrapper::DataWrapper;
 use crate::models::ingest_model::database_command_type::DatabaseCommandType;
 use crate::models::ingest_model::response::Response;
@@ -24,7 +24,7 @@ impl RedisHandle{
             data,
         }
     }
-    fn get_args(&self) -> Result<RedisArgs, HermesError> {
+    fn get_args(&self) -> Result<RedisHandleArgs, HermesError> {
         serde_json::from_str(&self.args).map_err(HermesError::from)
     }
     fn get_data(&self) -> Result<DataWrapper, HermesError>{
