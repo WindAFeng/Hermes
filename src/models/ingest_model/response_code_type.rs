@@ -7,7 +7,8 @@ pub enum ResponseCodeType {
     NotFoundKey = 1,
     NotFoundColumn = 2,
     NotFoundDatabase = 3,
-    ArgNotFound = 4 
+    ArgNotFound = 4,
+    BadRequest = 5
 }
 
 impl Serialize for ResponseCodeType {

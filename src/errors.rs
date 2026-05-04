@@ -35,6 +35,9 @@ pub enum HermesError {
 
     #[error("Redis connection pool error: {0}")]
     RedisPool(#[from] bb8::RunError<RedisError>),
+
+    #[error("Key Not Found: {0}")]
+    KeyNotFound(String),
 }
 
 impl ResponseError for HermesError {
@@ -50,6 +53,7 @@ impl ResponseError for HermesError {
             HermesError::WebSocket(_) => StatusCode::BAD_GATEWAY,
             HermesError::Network(_) => StatusCode::SERVICE_UNAVAILABLE,
             HermesError::RedisPool(_) => StatusCode::INTERNAL_SERVER_ERROR,
+            &HermesError::KeyNotFound(_) => StatusCode::INTERNAL_SERVER_ERROR,
         }
     }
 }
