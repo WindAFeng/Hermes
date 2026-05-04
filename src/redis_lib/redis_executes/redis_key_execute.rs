@@ -14,9 +14,9 @@ impl RedisKeyExecute {
     pub fn new(connect: MultiplexedConnection) -> Self {
         Self { exe: RedisExecute::new(connect) }
     }
-    pub async fn del(&mut self,key: String) -> Result<(), HermesError> {
+    pub async fn del(&mut self,key: String) -> Result<bool, HermesError> {
         // 删除指定 key
-        self.exe.execute(RedisCommands::DEL, RedisValueFormat::OnlyKey(key))
+        self.exe.execute::<bool>(RedisCommands::DEL, RedisValueFormat::OnlyKey(key))
             .await
     }
     pub async fn dump(&mut self,key: String) -> Result<String, HermesError> {
@@ -70,12 +70,12 @@ impl RedisKeyExecute {
             .await
     }
     pub async fn keys(&mut self, pattern: RedisKeyPattern) -> Result<Vec<String>, HermesError> {
+        // 查找所有符合给定模式(pattern)的 key
         let patterns = match pattern {
-            RedisKeyPattern::All => vec!["*".to_string()],
-            RedisKeyPattern::Keys(keys) => keys,
-            RedisKeyPattern::StartFrom(key_start) => vec![format!("{}*", key_start)],
+            RedisKeyPattern::All => "*".to_string(),
+            RedisKeyPattern::StartFrom(key_start) => format!("{}*", key_start),
+            RedisKeyPattern::EndFrom(key_end) => format!("*{}", key_end),
         };
-        self.exe.execute(RedisCommands::KEYS, RedisValueFormat::Items(patterns))
+        self.exe.execute(RedisCommands::KEYS, RedisValueFormat::OnlyKey(patterns))
             .await
-
     }}

@@ -49,7 +49,7 @@ impl RedisHandle{
                 redis_update_command_handle().await
             },
             DatabaseCommandType::Delete => {
-                redis_delete_command_handle().await
+                redis_delete_command_handle(self.database_name.clone(), args).await
             }
             DatabaseCommandType::Use => {
                 redis_use_command_handle().await

@@ -4,11 +4,11 @@ use serde::{Deserialize, Serialize};
 #[serde(rename_all = "lowercase")]
 pub enum RequestAssistant {
     Add,
-    Delete,
-    Update,
+    Del,
+    Upd,
     Get,
     Use,
-    Config,
-    Clear,
+    Cfg,
+    Clr,
     Set
 }

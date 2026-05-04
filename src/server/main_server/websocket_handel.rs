@@ -4,22 +4,12 @@ use tokio::net::TcpStream;
 use tokio_tungstenite::{WebSocketStream, accept_async};
 use tokio_tungstenite::tungstenite::{Message, Error};
 use tokio_tungstenite::tungstenite::protocol::frame::Utf8Bytes;
+use crate::command_handle::handle::CommandHandle;
 use crate::utils::log;
 use crate::models::ingest_model::{request::Request, response::Response};
-use crate::models::ingest_model::response_message_type::ResponseMessageType;
-use crate::models::ingest_model::response_code_type::ResponseCodeType;
 
 async fn get_ws_stream(stream: TcpStream) -> Result<WebSocketStream<TcpStream>, HermesError> {
-    match accept_async(stream).await {
-        Ok(s) => {
-            log::debug("WebSocket Handshake successful");
-            Ok(s)
-        }
-        Err(e) => {
-            log::error(format!("WebSocket Handshake failed: {}", e));
-            Err(HermesError::from(e))
-        }
-    }
+    accept_async(stream).await.map_err(HermesError::from)
 }
 fn get_message(message_result: Result<Message, Error>) ->Result<Option<Message>, HermesError> {
     match message_result {
@@ -50,10 +40,7 @@ fn get_request(text: &str) -> Result<Request, HermesError> {
     }
 }
 fn to_json(resp: &Response) -> Result<Option<Utf8Bytes>, HermesError> {
-    match serde_json::to_string(resp) {
-        Ok(json) => Ok(Some(Utf8Bytes::from(json))),
-        Err(e) => Err(HermesError::from(e))
-    }
+    Ok(Some(Utf8Bytes::from(serde_json::to_string(&resp)?)))
 }
 
 async fn send_json(sender: &mut SplitSink<WebSocketStream<TcpStream>, Message>, json_str: Utf8Bytes) -> Result<(), HermesError> {
@@ -103,11 +90,7 @@ async fn check_message_is_text(message: &Message, sender: &mut SplitSink<WebSock
     Ok(())
 }
 async fn send_response(req: &Request) -> Result<Utf8Bytes, HermesError> {
-    let resp = Response {
-        code: ResponseCodeType::Success,
-        message: ResponseMessageType::Success,
-        data: None,
-    };
+    let resp = CommandHandle::new(req.clone()).get().await?;
     match to_json(&resp) {
         Ok(Some(json_str)) => Ok(json_str),
         _ => Err(HermesError::Internal("Can't get response json".to_string()))
@@ -117,9 +100,6 @@ pub async fn websocket_handel(stream: TcpStream) -> Result<(), HermesError> {
     let ws_stream = get_ws_stream(stream).await?;
     let (mut sender, mut receiver) = ws_stream.split();
     loop {
-        return match websocket_connect_handle(&mut receiver, &mut sender).await {
-            Ok(_) => Ok(()),
-            Err(_) => Err(HermesError::Network("Error while connecting to websocket".to_string()))
-        };
+        return websocket_connect_handle(&mut receiver, &mut sender).await
     }
 }

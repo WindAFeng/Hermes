@@ -9,7 +9,7 @@ use crate::models::ingest_model::database_command_type::DatabaseCommandType;
 use crate::models::ingest_model::hermes_command_type::HermesCommandType;
 use crate::models::ingest_model::ingest_command_type::IngestCommandType;
 
-#[derive(Serialize, Deserialize, Debug)]
+#[derive(Serialize, Deserialize, Debug, Clone)]
 pub struct Request {
     pub command: RequestAssistant,
     pub database: RequestDatabaseType,
@@ -54,12 +54,12 @@ impl Request {
         match command {
             RequestAssistant::Add => IngestCommandType::Database(DatabaseCommandType::Add),
             RequestAssistant::Get => IngestCommandType::Database(DatabaseCommandType::Get),
-            RequestAssistant::Update => IngestCommandType::Database(DatabaseCommandType::Update),
-            RequestAssistant::Delete => IngestCommandType::Database(DatabaseCommandType::Delete),
+            RequestAssistant::Upd => IngestCommandType::Database(DatabaseCommandType::Update),
+            RequestAssistant::Del => IngestCommandType::Database(DatabaseCommandType::Delete),
             RequestAssistant::Use => IngestCommandType::Database(DatabaseCommandType::Use),
             RequestAssistant::Set => IngestCommandType::Hermes(HermesCommandType::Set),
-            RequestAssistant::Clear => IngestCommandType::Hermes(HermesCommandType::Clear),
-            RequestAssistant::Config => IngestCommandType::Hermes(HermesCommandType::Config),
+            RequestAssistant::Clr => IngestCommandType::Hermes(HermesCommandType::Clear),
+            RequestAssistant::Cfg => IngestCommandType::Hermes(HermesCommandType::Config),
         }
     }
 }

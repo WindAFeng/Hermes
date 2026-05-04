@@ -10,27 +10,22 @@ use crate::redis_lib::create_connect::create_connect;
 use crate::redis_lib::redis_executes::redis_string_execute::RedisStringExecute;
 use crate::utils::config::get_config;
 use std::collections::HashMap;
-use std::sync::Arc;
 use serde_json::Value;
-use crate::models::config::Config;
+use crate::command_handle::get_addr::{get_host, get_port};
 
-fn get_host(db_name: &str, config: &Arc<Config>) -> String {
-    config.database.redis.get(db_name).unwrap().host.clone()
-}
-fn get_post(db_name: &str, config: &Arc<Config>) -> String {
-    match config.database.redis.get(db_name).unwrap().port{
-        Some(p) => p.to_string(),
-        None => "6379".to_string()
-    }
-}
 async fn get_value(key: &str, host: &str, port: &str) -> Result<String, HermesError> {
-    let connect = match create_connect(host, port).await {
-        Ok(connect) => connect,
-        Err(err) => return Err(HermesError::from(err)),
-    };
+    let connect = create_connect(host, port).await?;
     let mut redis_commands = RedisStringExecute::new(connect);
     match redis_commands.get(key).await {
         Ok(Some(value)) => Ok(value),
+        _ => Err(HermesError::Internal("Key not found".to_string())),
+    }
+}
+async fn get_values(key: &Vec<String>, host: &str, port: &str) -> Result<Vec<String>, HermesError> {
+    let connect = create_connect(host, port).await?;
+    let mut redis_commands = RedisStringExecute::new(connect);
+    match redis_commands.m_get(key.clone()).await {
+        Ok(value) => Ok(value),
         _ => Err(HermesError::Internal("Key not found".to_string())),
     }
 }
@@ -51,49 +46,41 @@ pub async fn redis_get_command_handle(
 ) -> Result<Response, HermesError> {
     let config = get_config();
     let db_name = get_db_name(DatabaseTypes::Redis, database_name, &config)?;
-    let host = get_host(&db_name, &config);
-    let port = get_post(&db_name, &config);
-    let keys = match args.get_keys() {
-        Ok(keys) => keys,
-        Err(e) => {
-            return Ok(Response {
-                code: ResponseCodeType::ArgNotFound,
-                message: ResponseMessageType::Error(e.to_string()),
-                data: None,
-            });
-        }
-    };
-    let mut data_list: Vec<HashMap<String, String>> = Vec::new();
-    for key in keys {
-        let value = match get_value(&key, &host, &port).await {
-            Ok(value) => value,
-            Err(_) => continue,
-        };
-        let mut data: HashMap<String, String> = HashMap::new();
-        data.insert(key, value);
-        data_list.push(data);
-    }
-    match data_list.len() {
+    let host = get_host(&db_name, &config, DatabaseTypes::Redis);
+    let port = get_port(&db_name, &config, DatabaseTypes::Redis);
+    let keys = args.get_keys()?;
+    match keys.len() {
         0 => Ok(Response {
             code: ResponseCodeType::NotFoundKey,
             message: ResponseMessageType::Error("Can't found data".to_string()),
             data: None,
         }),
         1 => {
-            let data_ls = to_value(&data_list);
-            let data = data_ls.get(0).unwrap().clone();
+            let key = keys.get(0).unwrap();
+            let value: Value = Value::String(get_value(&key, &host, &port).await?);
+            let mut result: HashMap<String, Value> = HashMap::new();
+            result.insert(key.clone(), value);
             Ok(Response {
                 code: ResponseCodeType::Success,
                 message: ResponseMessageType::Success,
-                data: Some(DataWrapper::One(data)),
+                data: Some(DataWrapper::One(result)),
             })
         }
         _ => {
-            let data = to_value(&data_list);
+            let values = get_values(&keys, &host, &port).await?;
+            let result: Vec<HashMap<String, String>> = keys
+                .into_iter()
+                .zip(values.into_iter())
+                .map(|(k, v)| {
+                    let mut map = HashMap::new();
+                    map.insert(k, v);
+                    map
+                })
+                .collect();
             Ok(Response {
                 code: ResponseCodeType::Success,
                 message: ResponseMessageType::Success,
-                data: Some(DataWrapper::Many(data)),
+                data: Some(DataWrapper::Many(to_value(&result))),
             })
         }
     }

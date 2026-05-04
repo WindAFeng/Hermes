@@ -1,5 +1,5 @@
 use crate::utils::time;
-#[derive(Debug, Clone, Copy)]
+use std::fmt::Display;
 enum LogLevel {
     Debug,
     Info,
@@ -8,20 +8,20 @@ enum LogLevel {
 }
 
 
-impl LogLevel {
-    fn to_str(&self) -> String {
+impl Display for LogLevel {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         match self { 
-            LogLevel::Debug => "debug".to_string(),
-            LogLevel::Info => "info".to_string(),
-            LogLevel::Warn => "warn".to_string(),
-            LogLevel::Error => "error".to_string(),
+            LogLevel::Debug => write!(f, "debug"),
+            LogLevel::Info => write!(f, "info"),
+            LogLevel::Warn => write!(f, "warn"),
+            LogLevel::Error => write!(f, "error"),
         }
     }
 }
 
 fn logging(level: LogLevel, message: &str) {
     let time = time::format_time();
-    println!("[{}] [{}] {}", time, level.to_str(), message);
+    println!("[{}] [{}] {}", time, level, message);
 }
 
 pub fn debug<T: AsRef<str>>(message: T) {

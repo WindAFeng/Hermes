@@ -1,9 +1,8 @@
 use std::collections::HashMap;
-use std::sync::Arc;
 use serde_json::Value;
+use crate::command_handle::get_addr::{get_host, get_port};
 use crate::command_handle::get_db_name::get_db_name;
 use crate::errors::HermesError;
-use crate::models::config::Config;
 use crate::models::database_types::DatabaseTypes;
 use crate::models::handle_modle::redis_handle_modle::redis_handle_args_model::RedisArgs;
 use crate::models::hermes_types::HermesTypes;
@@ -16,15 +15,6 @@ use crate::models::rust_type::RustType;
 use crate::redis_lib::create_connect::create_connect;
 use crate::redis_lib::redis_executes::{redis_string_execute::RedisStringExecute};
 use crate::utils::config::get_config;
-fn get_host(db_name: &str, config: &Arc<Config>) -> String {
-    config.database.redis.get(db_name).unwrap().host.clone()
-}
-fn get_post(db_name: &str, config: &Arc<Config>) -> String {
-    match config.database.redis.get(db_name).unwrap().port{
-        Some(p) => p.to_string(),
-        None => "6379".to_string()
-    }
-}
 async fn default_handle(data_list: Vec<HashMap<String, Value>>, host: &str, port: &str) -> Result<(), HermesError>{
     Ok(for item in data_list {
         for (key, val) in item {
@@ -41,8 +31,8 @@ async fn default_handle(data_list: Vec<HashMap<String, Value>>, host: &str, port
 pub async fn redis_add_command_handle(database_name: Option<String>, args: RedisArgs, data: DataWrapper) -> Result<Response, HermesError> {
     let config = get_config();
     let db_name = get_db_name(DatabaseTypes::Redis, database_name, &config)?;
-    let host = get_host(&db_name, &config);
-    let port = get_post(&db_name, &config);
+    let host = get_host(&db_name, &config, DatabaseTypes::Redis);
+    let port = get_port(&db_name, &config, DatabaseTypes::Redis);
     let value_type = match args.get_value_type() {
         Ok(value_type) => value_type,
         Err(e) => return Ok(Response {

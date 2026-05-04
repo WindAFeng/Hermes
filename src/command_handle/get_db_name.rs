@@ -12,7 +12,7 @@ fn get_redis_name(db: &DatabaseConfig) -> Result<String, HermesError> {
         .map(|(k, _)| k);
     match important {
         Some(k) => Ok(k.clone()),
-        None => return Err(HermesError::Internal("Not Found Redis Database".to_string()))
+        None => Err(HermesError::Internal("Not Found Redis Database".to_string()))
     }
 }
 pub fn get_db_name(database_type: DatabaseTypes, database_name: Option<String>, config: &Arc<Config>) -> Result<String, HermesError> {
