@@ -2,15 +2,15 @@ use crate::errors::HermesError;
 use crate::models::redis_model::redis_commands::RedisCommands;
 use crate::models::redis_model::redis_key_pattern::RedisKeyPattern;
 use crate::models::redis_model::redis_value_format::RedisValueFormat;
-use crate::redis_lib::redis_execute::RedisExecute;
+use crate::database_lib::redis_lib::redis_execute::RedisExecute;
 use base64::Engine;
 use base64::engine::general_purpose::STANDARD;
 use redis::aio::MultiplexedConnection;
 
-pub struct RedisKeyExecute {
+pub struct RedisKeyOperations {
     exe: RedisExecute,
 }
-impl RedisKeyExecute {
+impl RedisKeyOperations {
     pub fn new(connect: MultiplexedConnection) -> Self {
         Self { exe: RedisExecute::new(connect) }
     }

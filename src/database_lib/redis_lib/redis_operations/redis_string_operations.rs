@@ -1,12 +1,13 @@
 use crate::errors::HermesError;
 use crate::models::redis_model::redis_commands::RedisCommands;
 use crate::models::redis_model::redis_value_format::RedisValueFormat;
-use crate::redis_lib::redis_execute::RedisExecute;
+use crate::database_lib::redis_lib::redis_execute::RedisExecute;
 use redis::aio::MultiplexedConnection;
-pub struct RedisStringExecute {
+
+pub struct RedisStringOperations {
     exe: RedisExecute,
 }
-impl RedisStringExecute {
+impl RedisStringOperations {
     pub fn new(connect: MultiplexedConnection) -> Self {
         Self {
             exe: RedisExecute::new(connect),
@@ -59,5 +60,7 @@ impl RedisStringExecute {
     pub async fn m_get(&mut self, key: Vec<String>) -> Result<Vec<String>, HermesError> {
         self.exe.execute::<Vec<String>>(RedisCommands::MGET, RedisValueFormat::Items(key)).await
     }
-    
+    pub async fn m_set(&mut self, data_list: Vec<String>) -> Result<(), HermesError> {
+        self.exe.execute(RedisCommands::MSET, RedisValueFormat::Items(data_list)).await
+    }
 }

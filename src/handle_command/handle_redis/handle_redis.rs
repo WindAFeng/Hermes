@@ -1,21 +1,21 @@
-use crate::command_handle::redis_handle::redis_add_command_handle::redis_add_command_handle;
-use crate::command_handle::redis_handle::redis_get_command_handle::redis_get_command_handle;
-use crate::command_handle::redis_handle::redis_update_command_handle::redis_update_command_handle;
-use crate::command_handle::redis_handle::redis_delete_command_handle::redis_delete_command_handle;
-use crate::command_handle::redis_handle::redis_use_command_handle::redis_use_command_handle;
+use crate::handle_command::handle_redis::handle_redis_add_command::redis_add_command_handle;
+use crate::handle_command::handle_redis::handle_redis_get_command::handle_redis_get_command;
+use crate::handle_command::handle_redis::handle_redis_update_command::redis_update_command_handle;
+use crate::handle_command::handle_redis::handle_redis_delete_command::redis_delete_command_handle;
+use crate::handle_command::handle_redis::handle_redis_use_command::redis_use_command_handle;
 use crate::errors::HermesError;
-use crate::models::handle_modle::redis_handle_modle::redis_handle_args_model::RedisHandleArgs;
+use crate::models::handle_modle::handle_redis_model::redis_handle_args_model::RedisHandleArgs;
 use crate::models::ingest_model::data_wrapper::DataWrapper;
 use crate::models::ingest_model::database_command_type::DatabaseCommandType;
 use crate::models::ingest_model::response::Response;
 
-pub struct RedisHandle{
+pub struct HandleRedis{
     command: DatabaseCommandType,
     database_name: Option<String>,
     args: String,
     data: Option<DataWrapper>,
 }
-impl RedisHandle{
+impl HandleRedis{
     pub fn new(command: DatabaseCommandType,database_name: Option<String>, args: String, data: Option<DataWrapper>) -> Self{
         Self {
             command,
@@ -40,7 +40,7 @@ impl RedisHandle{
         };
         match &self.command {
             DatabaseCommandType::Get => {
-                redis_get_command_handle(self.database_name.clone(), args).await
+                handle_redis_get_command(self.database_name.clone(), args).await
             },
             DatabaseCommandType::Add => {
                 redis_add_command_handle(self.database_name.clone(), args, self.get_data()?).await

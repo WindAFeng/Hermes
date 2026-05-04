@@ -3,7 +3,7 @@ use crate::models::ingest_model::request::Request;
 use crate::utils::log;
 use tokio::io::{AsyncReadExt, AsyncWriteExt};
 use tokio::net::TcpStream;
-use crate::command_handle::handle::CommandHandle;
+use crate::handle_command::handle_command::HandleCommand;
 
 async fn read_data(socket: &mut TcpStream, buf: &mut [u8]) -> Result<Option<usize>, HermesError> {
     match socket.read(buf).await {
@@ -36,7 +36,7 @@ pub async fn socket_handel(mut socket: TcpStream) -> Result<(), HermesError> {
                 continue;
             }
         };
-        let resp = CommandHandle::new(req).get().await?;
+        let resp = HandleCommand::new(req).get().await?;
         let resp_bytes = resp.to_bytes()?;
         if let Err(e) = socket.write_all(&resp_bytes).await {
             log::error(format!("TCP Write Error: {}", e));

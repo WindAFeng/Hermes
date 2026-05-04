@@ -2,7 +2,7 @@ use redis::aio::MultiplexedConnection;
 use redis::{Client};
 use crate::errors::HermesError;
 
-pub async fn create_connect(host: &str, port: &str) -> Result<MultiplexedConnection, HermesError> {
+pub async fn establish_redis_connection(host: &str, port: &str) -> Result<MultiplexedConnection, HermesError> {
     let addr = format!("redis://{}:{}", host, port);
     let client = match Client::open(addr) {
         Ok(c) => c,

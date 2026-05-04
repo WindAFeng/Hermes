@@ -1,12 +1,12 @@
 use crate::errors::HermesError;
 use crate::server::server::MainServer;
 use crate::utils::{config::init_config, log};
-mod redis_lib;
 pub mod models;
 pub mod errors;
 pub mod utils;
 pub mod server;
-pub mod command_handle;
+pub mod handle_command;
+pub mod database_lib;
 
 #[tokio::main]
 async fn main() -> Result<(), HermesError> {

@@ -1,4 +1,4 @@
-use crate::command_handle::redis_handle::redis_handle::RedisHandle;
+use crate::handle_command::handle_redis::handle_redis::HandleRedis;
 use crate::errors::HermesError;
 use crate::models::ingest_model::data_wrapper::DataWrapper;
 use crate::models::ingest_model::database_command_type::DatabaseCommandType;
@@ -8,8 +8,8 @@ use crate::models::ingest_model::request::Request;
 use crate::models::ingest_model::response::Response;
 use crate::models::ingest_model::response_code_type::ResponseCodeType;
 use crate::models::ingest_model::response_message_type::ResponseMessageType;
-async fn redis_handle(command: &DatabaseCommandType, database_name: Option<String>, args: String, data: Option<DataWrapper>) -> Result<Response, HermesError>{
-    let redis_handle = RedisHandle::new(
+async fn handle_redis(command: &DatabaseCommandType, database_name: Option<String>, args: String, data: Option<DataWrapper>) -> Result<Response, HermesError>{
+    let redis_handle = HandleRedis::new(
         command.clone(),
         database_name.clone(),
         args,
@@ -17,42 +17,42 @@ async fn redis_handle(command: &DatabaseCommandType, database_name: Option<Strin
     );
     redis_handle.to_response().await
 }
-async fn mysql_handle() -> Result<Response, HermesError>{
+async fn handle_mysql() -> Result<Response, HermesError>{
     Ok(Response {
         code: ResponseCodeType::Success,
         message: ResponseMessageType::Success,
         data: None,
     })
 }
-async fn postgresql_handle() -> Result<Response, HermesError>{
+async fn handle_postgresql() -> Result<Response, HermesError>{
     Ok(Response {
         code: ResponseCodeType::Success,
         message: ResponseMessageType::Success,
         data: None,
     })
 }
-async fn mongodb_handle() -> Result<Response, HermesError>{
+async fn handle_mongodb() -> Result<Response, HermesError>{
     Ok(Response {
         code: ResponseCodeType::Success,
         message: ResponseMessageType::Success,
         data: None,
     })
 }
-pub struct CommandHandle {
+pub struct HandleCommand {
     request: Request,
 }
-impl CommandHandle {
+impl HandleCommand {
     pub fn new(request: Request) -> Self {
-        CommandHandle { request }
+        Self { request }
     }
     async fn database_match(&self, command: &DatabaseCommandType) -> Result<Response, HermesError> {
         let args = self.request.args_to_json()?;
         let data = self.request.get_data()?;
         match &self.request.database {
-            RequestDatabaseType::Redis => redis_handle(command, self.request.db_name.clone(), args, data).await,
-            RequestDatabaseType::MySql => mysql_handle().await,
-            RequestDatabaseType::MongoDB => mongodb_handle().await,
-            RequestDatabaseType::PostgreSQL => postgresql_handle().await,
+            RequestDatabaseType::Redis => handle_redis(command, self.request.db_name.clone(), args, data).await,
+            RequestDatabaseType::MySql => handle_mysql().await,
+            RequestDatabaseType::MongoDB => handle_mongodb().await,
+            RequestDatabaseType::PostgreSQL => handle_postgresql().await,
         }
     }
 

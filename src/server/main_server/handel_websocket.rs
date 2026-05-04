@@ -4,7 +4,7 @@ use tokio::net::TcpStream;
 use tokio_tungstenite::{WebSocketStream, accept_async};
 use tokio_tungstenite::tungstenite::{Message, Error};
 use tokio_tungstenite::tungstenite::protocol::frame::Utf8Bytes;
-use crate::command_handle::handle::CommandHandle;
+use crate::handle_command::handle_command::HandleCommand;
 use crate::utils::log;
 use crate::models::ingest_model::{request::Request, response::Response};
 
@@ -90,7 +90,7 @@ async fn check_message_is_text(message: &Message, sender: &mut SplitSink<WebSock
     Ok(())
 }
 async fn send_response(req: &Request) -> Result<Utf8Bytes, HermesError> {
-    let resp = CommandHandle::new(req.clone()).get().await?;
+    let resp = HandleCommand::new(req.clone()).get().await?;
     match to_json(&resp) {
         Ok(Some(json_str)) => Ok(json_str),
         _ => Err(HermesError::Internal("Can't get response json".to_string()))

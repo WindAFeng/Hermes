@@ -2,9 +2,9 @@ use std::collections::HashMap;
 use crate::errors::HermesError;
 use crate::models::redis_model::redis_commands::RedisCommands;
 use crate::models::redis_model::redis_value_format::RedisValueFormat;
-use crate::redis_lib::async_command_builder::async_command_builder;
+use crate::database_lib::redis_lib::async_command_builder::async_command_builder;
 use redis::aio::MultiplexedConnection;
-use crate::redis_lib::async_pipe_command_builder::async_pipe_command_builder;
+use crate::database_lib::redis_lib::async_pipe_command_builder::async_pipe_command_builder;
 
 pub struct RedisExecute {
     connection: MultiplexedConnection,

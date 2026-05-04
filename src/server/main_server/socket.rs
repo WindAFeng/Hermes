@@ -1,6 +1,6 @@
 use crate::errors::HermesError;
 use crate::server::main_server::tcp::Tcp;
-use crate::server::main_server::socket_handel::socket_handel;
+use crate::server::main_server::handel_socket::socket_handel;
 pub struct SocketServer{
     tcp_server: Tcp
 }
