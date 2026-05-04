@@ -10,8 +10,8 @@ pub struct RedisExecute {
     connection: MultiplexedConnection,
 }
 impl RedisExecute {
-    pub fn new(connection: MultiplexedConnection) -> RedisExecute {
-        RedisExecute { connection }
+    pub fn new(connection: MultiplexedConnection) -> Self {
+        Self { connection }
     }
     pub async fn execute<T: redis::FromRedisValue>(
         &mut self,

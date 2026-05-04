@@ -1,1 +1,1 @@
-pub mod redis_handle_args_model;
+pub mod handle_redis_args_model;

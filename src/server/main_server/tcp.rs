@@ -26,11 +26,11 @@ pub struct Tcp {
     tcp_listener: TcpListener,
 }
 impl Tcp {
-    pub async fn new(host: &str, port: &str, socket_type: &str) -> Result<Tcp, HermesError> {
+    pub async fn new(host: &str, port: &str, socket_type: &str) -> Result<Self, HermesError> {
         let addr = format!("{}:{}", host, port);
         match create_tcp_listener(&host, &port, addr, socket_type).await {
             Ok(listener) => {
-                Ok(Tcp { tcp_listener: listener })
+                Ok(Self { tcp_listener: listener })
             }
             Err(e) => Err(HermesError::from(e)),
         }

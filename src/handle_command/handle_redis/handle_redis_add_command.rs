@@ -4,7 +4,7 @@ use crate::handle_command::resolve_db_addr::{resolve_database_host, resolve_data
 use crate::handle_command::resolve_db_name::resolve_database_name;
 use crate::errors::HermesError;
 use crate::models::database_types::DatabaseTypes;
-use crate::models::handle_modle::handle_redis_model::redis_handle_args_model::RedisHandleArgs;
+use crate::models::handle_modle::handle_redis_model::handle_redis_args_model::RedisHandleArgs;
 use crate::models::hermes_types::HermesTypes;
 use crate::models::ingest_model::data_wrapper::DataWrapper;
 use crate::models::ingest_model::data_wrapper::DataWrapper::{One, Many};
@@ -36,7 +36,7 @@ async fn add_to_string(data_list: &Vec<HashMap<String, Value>>, host: &str, port
         }
     }
 }
-pub async fn redis_add_command_handle(database_name: Option<String>, args: RedisHandleArgs, data: DataWrapper) -> Result<Response, HermesError> {
+pub async fn handle_redis_add_command(database_name: Option<String>, args: RedisHandleArgs, data: DataWrapper) -> Result<Response, HermesError> {
     let config = get_config();
     let db_name = resolve_database_name(DatabaseTypes::Redis, database_name, &config)?;
     let host = resolve_database_host(&db_name, &config, DatabaseTypes::Redis);

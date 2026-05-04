@@ -7,9 +7,9 @@ pub struct WebApp{
     port: u16,
 }
 impl WebApp{
-    pub fn new() -> WebApp{
+    pub fn new() -> Self{
         let config = &get_config();
-        WebApp{
+        Self{
             host: config.web.host.clone(),
             port: config.web.port,
         }

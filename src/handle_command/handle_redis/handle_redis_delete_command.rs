@@ -4,7 +4,7 @@ use crate::handle_command::resolve_db_addr::{resolve_database_host, resolve_data
 use crate::handle_command::resolve_db_name::resolve_database_name;
 use crate::errors::HermesError;
 use crate::models::database_types::DatabaseTypes;
-use crate::models::handle_modle::handle_redis_model::redis_handle_args_model::RedisHandleArgs;
+use crate::models::handle_modle::handle_redis_model::handle_redis_args_model::RedisHandleArgs;
 use crate::models::ingest_model::data_wrapper::DataWrapper;
 use crate::models::ingest_model::response::Response;
 use crate::models::ingest_model::response_code_type::ResponseCodeType;
@@ -18,7 +18,7 @@ async fn delete_key(keys: &Vec<String>, host: &str, port: &str) -> Result<usize,
     redis_execute.del(keys).await
 }
 
-pub async fn redis_delete_command_handle(database_name: Option<String>, args: RedisHandleArgs) -> Result<Response, HermesError>{
+pub async fn handle_redis_delete_command(database_name: Option<String>, args: RedisHandleArgs) -> Result<Response, HermesError>{
     let config = get_config();
     let db_name = resolve_database_name(DatabaseTypes::Redis, database_name, &config)?;
     let host = resolve_database_host(&db_name, &config, DatabaseTypes::Redis);

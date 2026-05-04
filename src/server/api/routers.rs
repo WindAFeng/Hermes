@@ -1,5 +1,5 @@
 use actix_web::web;
-use crate::server::api::api_handle::{database_state, health};
+use crate::server::api::handle_request::{database_state, health};
 pub fn config(cfg: &mut web::ServiceConfig) {
     cfg.service(
         web::scope("/api")

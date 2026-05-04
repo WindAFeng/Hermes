@@ -12,9 +12,9 @@ pub struct MainServer {
 }
 
 impl MainServer {
-    pub fn new() -> MainServer {
+    pub fn new() -> Self {
         let server_config = &get_config().server;
-        MainServer {
+        Self {
             socket_host: server_config.socket.host.clone(),
             socket_port: server_config.socket.port.clone().to_string(),
             websocket_host: server_config.websocket.host.clone(),
