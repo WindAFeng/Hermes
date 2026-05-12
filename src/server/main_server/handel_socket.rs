@@ -30,14 +30,14 @@ pub async fn socket_handel(mut socket: TcpStream) -> Result<(), HermesError> {
             Ok(Some(n)) => {
                 let req = parse_request(&buf[..n])?;
                 let cmd_rst = CommandExecutor::new(req).get_result().await;
-                let resp = Response::new(cmd_rst);
-                let resp_bytes = resp.to_bytes()?;
+                let resp_bytes = Response::new(cmd_rst).to_bytes()?;
                 socket.write_all(&resp_bytes).await?;
                 Ok(())
             },
-            Ok(None) => Ok(()),
+            Ok(None) => break,
             Err(e) => Err(HermesError::from(e))
         };
         result?
     }
+    Ok(())
 }
