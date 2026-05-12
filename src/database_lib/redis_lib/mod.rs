@@ -1,5 +1,5 @@
 pub mod async_command_builder;
-mod redis_execute;
-pub mod create_connect;
-pub mod redis_operations;
 pub mod async_pipe_command_builder;
+pub mod establish_redis_connection;
+pub mod execute_redis_command;
+pub mod redis_operations;

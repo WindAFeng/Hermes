@@ -1,4 +1,4 @@
-use crate::errors::HermesError;
+use crate::models::hermes_model::hermes_error::HermesError;
 use actix_web::{App, HttpServer};
 use crate::utils::{config::get_config};
 use crate::server::api::routers;

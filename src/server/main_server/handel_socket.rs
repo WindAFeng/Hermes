@@ -1,9 +1,10 @@
-use crate::errors::HermesError;
-use crate::models::ingest_model::request::Request;
+use crate::models::hermes_model::hermes_error::HermesError;
+use crate::models::ingest_model::request_model::request::Request;
 use crate::utils::log;
 use tokio::io::{AsyncReadExt, AsyncWriteExt};
 use tokio::net::TcpStream;
-use crate::handle_command::handle_command::HandleCommand;
+use crate::command_executor::CommandExecutor;
+use crate::models::ingest_model::response_model::response::Response;
 
 async fn read_data(socket: &mut TcpStream, buf: &mut [u8]) -> Result<Option<usize>, HermesError> {
     match socket.read(buf).await {
@@ -18,29 +19,25 @@ async fn read_data(socket: &mut TcpStream, buf: &mut [u8]) -> Result<Option<usiz
         }
     }
 }
-async fn get_result(buf: &[u8]) -> Result<Request, HermesError> {
-    serde_json::from_slice(buf).map_err(|e| HermesError::from(e))
+fn parse_request(buf: &[u8]) -> Result<Request, HermesError> {
+    serde_json::from_slice(buf).map_err(HermesError::from)
 }
 
 pub async fn socket_handel(mut socket: TcpStream) -> Result<(), HermesError> {
     let mut buf = [0; 4096];
     loop {
-        let n = match read_data(&mut socket, &mut buf).await {
-            Ok(Some(n)) => n,
-            _ => break,
+        let result = match read_data(&mut socket, &mut buf).await {
+            Ok(Some(n)) => {
+                let req = parse_request(&buf[..n])?;
+                let cmd_rst = CommandExecutor::new(req).get_result().await;
+                let resp = Response::new(cmd_rst);
+                let resp_bytes = resp.to_bytes()?;
+                socket.write_all(&resp_bytes).await?;
+                Ok(())
+            },
+            Ok(None) => Ok(()),
+            Err(e) => Err(HermesError::from(e))
         };
-        let req = match get_result(&buf[..n]).await {
-            Ok(r) => r,
-            Err(e) => {
-                log::error(format!("JSON解析失败: {}", e));
-                continue;
-            }
-        };
-        let resp = HandleCommand::new(req).get().await?;
-        let resp_bytes = resp.to_bytes()?;
-        if let Err(e) = socket.write_all(&resp_bytes).await {
-            log::error(format!("TCP Write Error: {}", e));
-        }
+        result?
     }
-    Ok(())
 }

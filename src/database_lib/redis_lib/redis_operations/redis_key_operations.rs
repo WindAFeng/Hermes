@@ -1,18 +1,19 @@
-use crate::errors::HermesError;
-use crate::models::redis_model::redis_commands::RedisCommands;
-use crate::models::redis_model::redis_key_pattern::RedisKeyPattern;
-use crate::models::redis_model::redis_value_format::RedisValueFormat;
-use crate::database_lib::redis_lib::redis_execute::RedisExecute;
+use crate::models::hermes_model::hermes_error::HermesError;
+use crate::models::database_model::redis_model::redis_commands::RedisCommands;
+use crate::models::database_model::redis_model::redis_key_pattern::RedisKeyPattern;
+use crate::models::database_model::redis_model::redis_value_format::RedisValueFormat;
+use crate::database_lib::redis_lib::execute_redis_command::ExecuteRedisCommand;
 use base64::Engine;
 use base64::engine::general_purpose::STANDARD;
 use redis::aio::MultiplexedConnection;
+use crate::models::database_model::redis_model::redis_types::RedisTypes;
 
 pub struct RedisKeyOperations {
-    exe: RedisExecute,
+    exe: ExecuteRedisCommand,
 }
 impl RedisKeyOperations {
     pub fn new(connect: MultiplexedConnection) -> Self {
-        Self { exe: RedisExecute::new(connect) }
+        Self { exe: ExecuteRedisCommand::new(connect) }
     }
     pub async fn del(&mut self, keys: &[String]) -> Result<usize, HermesError> {
         if keys.is_empty() {
@@ -87,5 +88,27 @@ impl RedisKeyOperations {
         };
         self.exe.execute(RedisCommands::KEYS, RedisValueFormat::OnlyKey(patterns))
             .await
+    }
+    pub async fn type_(&mut self, keys: &[String]) -> Result<Vec<RedisTypes>, HermesError> {
+        match keys.len() {
+            0 => Ok(Vec::new()),
+            1 => {
+                let key = &keys[0];
+                let type_ = self.exe.execute::<String>(RedisCommands::TYPE, RedisValueFormat::OnlyKey(key.clone())).await?;
+                Ok(vec![RedisTypes::from_str(type_)])
+            }
+            _ => {
+                let mut commands: Vec<(RedisCommands, RedisValueFormat)> = Vec::with_capacity(keys.len());
+                for key in keys {
+                    commands.push((RedisCommands::TYPE, RedisValueFormat::OnlyKey(key.clone())));
+                }
+                let types = self.exe.pipe_exec::<Vec<String>>(commands).await?;
+                let mut result: Vec<RedisTypes> = Vec::with_capacity(types.len());
+                for t in types {
+                    result.push(RedisTypes::from_str(t))
+                }
+                Ok(result)
+            }
+        }
     }
 }

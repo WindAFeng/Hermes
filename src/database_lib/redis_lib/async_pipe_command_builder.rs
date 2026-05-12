@@ -1,12 +1,11 @@
-use crate::errors::HermesError;
-use crate::models::redis_model::redis_commands::RedisCommands;
-use crate::models::redis_model::redis_value_format::RedisValueFormat;
+use crate::models::hermes_model::hermes_error::HermesError;
+use crate::models::database_model::redis_model::redis_commands::RedisCommands;
+use crate::models::database_model::redis_model::redis_value_format::RedisValueFormat;
 use redis::{FromRedisValue, Pipeline};
 use redis::aio::MultiplexedConnection;
-use std::collections::HashMap;
-pub async fn async_pipe_command_builder<T>(
+pub async fn execute_redis_pipeline<T>(
     conn: &mut MultiplexedConnection,
-    commands: HashMap<RedisCommands, RedisValueFormat>,
+    commands: Vec<(RedisCommands, RedisValueFormat)>,
 ) -> Result<T, HermesError>
 where
     T: FromRedisValue,

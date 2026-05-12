@@ -1,5 +1,5 @@
 use tokio::signal;
-use crate::errors::HermesError;
+use crate::models::hermes_model::hermes_error::HermesError;
 use crate::server::main_server::{websocket::WebsocketServer, socket::SocketServer};
 use crate::utils::{config::get_config, log};
 use crate::server::api::web::WebApp;

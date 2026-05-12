@@ -1,11 +1,10 @@
-use crate::errors::HermesError;
+use models::hermes_model::hermes_error::HermesError;
 use crate::server::server::MainServer;
 use crate::utils::{config::init_config, log};
 pub mod models;
-pub mod errors;
 pub mod utils;
 pub mod server;
-pub mod handle_command;
+pub mod command_executor;
 pub mod database_lib;
 
 #[tokio::main]

@@ -1,6 +1,6 @@
 use local_ip_address::list_afinet_netifas;
 use std::net::{IpAddr};
-use crate::errors::HermesError;
+use crate::models::hermes_model::hermes_error::HermesError;
 use crate::utils::log;
 
 pub fn get_local_host() -> Result<String, HermesError> {

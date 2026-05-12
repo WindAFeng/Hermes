@@ -1,10 +1,3 @@
-pub mod response;
-pub mod data_wrapper;
-pub mod request;
-pub mod request_assistant;
-pub mod request_database_type;
-pub mod response_code_type;
-pub mod response_message_type;
-pub mod ingest_command_type;
-pub mod database_command_type;
-pub mod hermes_command_type;
+pub mod commands;
+pub mod request_model;
+pub mod response_model;

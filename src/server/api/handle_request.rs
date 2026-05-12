@@ -1,6 +1,6 @@
 use std::collections::HashMap;
 use actix_web::HttpResponse;
-use crate::errors::HermesError;
+use crate::models::hermes_model::hermes_error::HermesError;
 use crate::models::api_model::{health::Health, database_state::DatabaseState};
 use crate::utils::time::timestamp;
 

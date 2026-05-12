@@ -1,12 +1,13 @@
-use crate::errors::HermesError;
+use crate::models::hermes_model::hermes_error::HermesError;
 use futures_util::{stream::{SplitSink, SplitStream}, SinkExt, StreamExt};
 use tokio::net::TcpStream;
-use tokio_tungstenite::{WebSocketStream, accept_async};
-use tokio_tungstenite::tungstenite::{Message, Error};
+use tokio_tungstenite::{accept_async, WebSocketStream};
+use tokio_tungstenite::tungstenite::{Error, Message};
 use tokio_tungstenite::tungstenite::protocol::frame::Utf8Bytes;
-use crate::handle_command::handle_command::HandleCommand;
+use crate::command_executor::CommandExecutor;
 use crate::utils::log;
-use crate::models::ingest_model::{request::Request, response::Response};
+use crate::models::ingest_model::response_model::response::Response;
+use crate::models::ingest_model::request_model::request::Request;
 
 async fn get_ws_stream(stream: TcpStream) -> Result<WebSocketStream<TcpStream>, HermesError> {
     accept_async(stream).await.map_err(HermesError::from)
@@ -90,7 +91,8 @@ async fn check_message_is_text(message: &Message, sender: &mut SplitSink<WebSock
     Ok(())
 }
 async fn send_response(req: &Request) -> Result<Utf8Bytes, HermesError> {
-    let resp = HandleCommand::new(req.clone()).get().await?;
+    let cmd_rst = CommandExecutor::new(req.clone()).get_result().await;
+    let resp = Response::new(cmd_rst);
     match to_json(&resp) {
         Ok(Some(json_str)) => Ok(json_str),
         _ => Err(HermesError::Internal("Can't get response json".to_string()))
