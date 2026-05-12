@@ -1,5 +1,5 @@
 use crate::models::hermes_model::hermes_error::HermesError;
-use crate::server::main_server::handel_websocket::websocket_handel;
+use crate::server::main_server::handel_websocket::websocket_handle;
 use crate::server::main_server::tcp::Tcp;
 pub struct WebsocketServer {
     tcp_server: Tcp,
@@ -11,6 +11,6 @@ impl WebsocketServer {
             .map(|tcp_server| Self { tcp_server })
     }
     pub async fn start(&mut self) {
-        self.tcp_server.run(websocket_handel).await;
+        self.tcp_server.run(websocket_handle).await;
     }
 }
