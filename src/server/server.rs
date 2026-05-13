@@ -13,15 +13,15 @@ pub struct MainServer {
 
 impl MainServer {
     pub fn new() -> Self {
-        let server_config = &get_config().server;
+        let server_cfg = &get_config().server;
         Self {
-            socket_host: server_config.socket.host.clone(),
-            socket_port: server_config.socket.port.clone().to_string(),
-            websocket_host: server_config.websocket.host.clone(),
-            websocket_port: server_config.websocket.port.clone().to_string(),
+            socket_host: server_cfg.socket.host.clone(),
+            socket_port: server_cfg.socket.port.clone().to_string(),
+            websocket_host: server_cfg.websocket.host.clone(),
+            websocket_port: server_cfg.websocket.port.clone().to_string(),
         }
     }
-
+    
     pub async fn run(&self) -> Result<(), HermesError> {
         let socket_fut = {
             let mut socket_server = SocketServer::new(&self.socket_host, &self.socket_port).await?;

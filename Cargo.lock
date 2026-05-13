@@ -7,7 +7,6 @@ name = "Hermes"
 version = "0.0.1"
 dependencies = [
  "actix-web",
- "anyhow",
  "async-trait",
  "base64",
  "bb8",

@@ -1,4 +1,4 @@
-use crate::command_executor::CommandExecutor;
+use crate::command_executor::CommandRouter;
 use crate::models::hermes_model::hermes_error::HermesError;
 use crate::models::ingest_model::request_model::request::Request;
 use crate::models::ingest_model::response_model::response::Response;
@@ -47,7 +47,7 @@ async fn check_message_is_text(
 ) -> Result<(), HermesError> {
     let text = message.to_text().map_err(HermesError::from)?;
     let request = serde_json::from_str::<Request>(text)?;
-    let cmd_rst = CommandExecutor::new(request).get_result().await;
+    let cmd_rst = CommandRouter::new(request).get_result().await;
     let string = serde_json::to_string(&Response::new(cmd_rst))?;
     sender
         .send(Message::Text(Utf8Bytes::from(string)))

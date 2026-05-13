@@ -37,7 +37,7 @@ pub struct MysqlConfig{
     pub user: String,
     pub password: String,
     pub database: String,
-    pub important: u8,
+    pub priority: u8,
 }
 #[derive(Deserialize, Debug, Clone)]
 pub struct PostgresConfig{
@@ -46,13 +46,16 @@ pub struct PostgresConfig{
     pub user: String,
     pub password: String,
     pub database: String,
-    pub important: u8,
+    pub priority: u8,
 }
 #[derive(Deserialize, Debug, Clone)]
 pub struct RedisConfig{
     pub host: String,
     pub port: Option<u16>,
-    pub important: u8,
+    pub user: String,
+    pub password: String,
+    pub database: String,
+    pub priority: u8,
 }
 #[derive(Deserialize, Debug, Clone)]
 pub struct MongoConfig{

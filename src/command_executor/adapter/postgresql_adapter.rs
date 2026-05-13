@@ -23,7 +23,7 @@ impl DatabaseAdapt for PostgreSQLAdapter {
         todo!()
     }
 
-    async fn get(&self) -> Result<Option<HermesType>, HermesError> {
+    async fn get(&self) -> Result<Option<HashMap<String, HermesType>>, HermesError> {
         todo!()
     }
 

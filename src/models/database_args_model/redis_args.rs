@@ -1,3 +1,4 @@
+use std::collections::HashMap;
 use serde::Deserialize;
 use crate::models::database_args_model::database_args::DatabaseArgs;
 use crate::models::database_model::redis_model::redis_list_push_mode::RedisListPushMode;
@@ -6,7 +7,8 @@ use crate::models::database_model::redis_model::redis_list_push_mode::RedisListP
 pub struct RedisArgs{
     #[serde(default)]
     pub keys: Option<Vec<String>>,
-    pub push_type: Option<RedisListPushMode,>
+    pub push_type: Option<RedisListPushMode>,
+    pub fields: Option<HashMap<String, Vec<String>>>,
 }
 impl DatabaseArgs for RedisArgs {
     fn from_str(args: &str) -> Self {

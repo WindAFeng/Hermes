@@ -7,3 +7,4 @@ pub mod hermes_model;
 pub mod database_args_model;
 pub mod database_data_value_model;
 pub mod database_type;
+pub mod cache_value;

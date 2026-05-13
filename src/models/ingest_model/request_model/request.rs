@@ -19,7 +19,7 @@ use std::collections::HashMap;
 pub struct Request {
     pub command: RequestAssistant,
     pub database: RequestDatabaseType,
-    pub db_name: Option<String>,
+    pub db_name: String,
     pub args: Option<HashMap<String, HermesType>>,
     pub data: Option<HashMap<String, RequestDataValue>>,
 }

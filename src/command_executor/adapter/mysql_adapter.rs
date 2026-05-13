@@ -24,7 +24,7 @@ impl DatabaseAdapt for MySQLAdapter{
         todo!()
     }
 
-    async fn get(&self) -> Result<Option<HermesType>, HermesError> {
+    async fn get(&self) -> Result<Option<HashMap<String, HermesType>>, HermesError> {
         todo!()
     }
 
