@@ -1,4 +1,3 @@
-use crate::models::cache_value::CacheValue;
 use crate::models::database_type::DatabaseType;
 use crate::models::hermes_model::hermes_error::HermesError;
 use crate::models::hermes_model::hermes_type::HermesType;
@@ -6,14 +5,16 @@ use moka::future::Cache;
 use std::sync::Arc;
 use std::time::Duration;
 use tokio::sync::OnceCell;
+use tracing::log::info;
 
 pub static GLOBAL_CACHE: OnceCell<Arc<HermesCache>> = OnceCell::const_new();
 pub struct HermesCache {
-    cache: Cache<String, CacheValue>,
+    cache: Cache<String, HermesType>,
 }
 impl HermesCache {
     pub fn init() -> Result<(), HermesError> {
-        let cache: Cache<String, CacheValue> = Cache::builder()
+        info!("initializing Hermes Cache");
+        let cache: Cache<String, HermesType> = Cache::builder()
             .max_capacity(1000)
             .time_to_idle(Duration::from_mins(5))
             .build();
@@ -25,30 +26,30 @@ impl HermesCache {
         GLOBAL_CACHE.get().unwrap()
     }
     pub async fn insert(
-        &mut self,
-        db_type: DatabaseType,
+        &self,
+        db_type: &DatabaseType,
+        db_name: &str,
         key: &str,
-        value: HermesType,
-        value_type: &str,
+        value: &HermesType,
     ) -> Result<(), HermesError> {
         self.cache
             .insert(
-                format!("{}:{}", db_type.to_string(), key),
-                CacheValue {
-                    value,
-                    type_: value_type.to_string(),
-                },
+                format!("{}:{}:{}", db_type.to_string(), db_name, key),
+                value.clone()
             )
             .await;
         Ok(())
     }
-    pub async fn get(&self, key: &str) -> Option<CacheValue> {
+    pub async fn get(&self, key: &str) -> Option<HermesType> {
         self.cache.get(key).await
     }
-    pub async fn remove(&mut self, key: &str) -> Option<CacheValue> {
+    pub fn is_empty(&self) -> bool {
+        self.cache.entry_count() == 0
+    }
+    pub async fn remove(&self, key: &str) -> Option<HermesType> {
         self.cache.remove(key).await
     }
-    pub async fn delete(&mut self, key: &str) {
+    pub async fn delete(&self, key: &str) {
         self.cache.invalidate(key).await;
     }
 }

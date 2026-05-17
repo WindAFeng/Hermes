@@ -1,19 +1,19 @@
-use crate::command_executor::CommandRouter;
+use tracing::log::{debug, warn};
+use crate::instruction_processing_center::CommandRouter;
 use crate::models::hermes_model::hermes_error::HermesError;
 use crate::models::ingest_model::response_model::response::Response;
-use crate::utils::log;
 use tokio::io::{AsyncReadExt, AsyncWriteExt};
 use tokio::net::TcpStream;
 
 async fn read_data(socket: &mut TcpStream, buf: &mut [u8]) -> Result<Option<usize>, HermesError> {
     match socket.read(buf).await {
         Ok(0) => {
-            log::debug("Client disconnected");
+            debug!("Client disconnected");
             Ok(None)
         }
         Ok(n) => Ok(Some(n)),
         Err(e) => {
-            log::warn(format!("TCP Read Error: {}", e));
+            warn!("TCP Read Error: {}", e);
             Err(HermesError::Network(e.to_string()))
         }
     }

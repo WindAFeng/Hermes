@@ -1,9 +1,12 @@
+
+
 pub enum DatabaseType{
     Redis,
     MySQL,
     MongoDB,
     PostgreSQL,
 }
+
 impl DatabaseType {
     pub fn to_string(&self) -> String {
         match self { 

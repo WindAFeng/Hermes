@@ -53,8 +53,8 @@ pub struct RedisConfig{
     pub host: String,
     pub port: Option<u16>,
     pub user: String,
-    pub password: String,
-    pub database: String,
+    pub password: Option<String>,
+    pub database: Option<String>,
     pub priority: u8,
 }
 #[derive(Deserialize, Debug, Clone)]

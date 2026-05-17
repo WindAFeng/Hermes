@@ -1,4 +1,4 @@
-use crate::command_executor::adapter::database_adapt::DatabaseAdapt;
+use crate::instruction_processing_center::adapter::database_adapt::DatabaseAdapt;
 use crate::models::hermes_model::hermes_error::HermesError;
 use crate::models::hermes_model::hermes_type::HermesType;
 use crate::models::ingest_model::request_model::request_data_value::RequestDataValue;
@@ -23,7 +23,7 @@ impl DatabaseAdapt for PostgreSQLAdapter {
         todo!()
     }
 
-    async fn get(&self) -> Result<Option<HashMap<String, HermesType>>, HermesError> {
+    async fn get(&self, keys: Vec<String>) -> Result<Option<HashMap<String, HermesType>>, HermesError> {
         todo!()
     }
 

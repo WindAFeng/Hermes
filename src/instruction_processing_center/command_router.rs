@@ -1,11 +1,11 @@
 use std::collections::HashMap;
 use std::sync::Arc;
-use crate::command_executor::adapter::database_adapt::DatabaseAdapt;
-use crate::command_executor::adapter::MongoDBAdapter;
-use crate::command_executor::adapter::MySQLAdapter;
-use crate::command_executor::adapter::PostgreSQLAdapter;
-use crate::command_executor::adapter::RedisAdapter;
-use crate::command_executor::command_handler::CommandHandler;
+use crate::instruction_processing_center::adapter::database_adapt::DatabaseAdapt;
+use crate::instruction_processing_center::adapter::MongoDBAdapter;
+use crate::instruction_processing_center::adapter::MySQLAdapter;
+use crate::instruction_processing_center::adapter::PostgreSQLAdapter;
+use crate::instruction_processing_center::adapter::RedisAdapter;
+use crate::instruction_processing_center::command_handler::CommandHandler;
 use crate::models::hermes_model::hermes_error::HermesError;
 use crate::models::ingest_model::commands::database_commands::DatabaseCommands;
 use crate::models::ingest_model::commands::ingest_command_type::IngestCommandType;
@@ -31,7 +31,7 @@ impl CommandRouter {
             RequestDatabaseType::PostgreSQL => Arc::new(PostgreSQLAdapter::new()),
             RequestDatabaseType::MongoDB => Arc::new(MongoDBAdapter::new()),
         };
-        let handler = CommandHandler::new(adapter);
+        let handler = CommandHandler::new(adapter, &self.request);
         match command {
             DatabaseCommands::Add => handler.add().await,
             DatabaseCommands::Get => handler.get().await,

@@ -1,5 +1,6 @@
 use serde::Deserializer;
 use crate::models::database_data_type_model::redis_data_type_visitor::RequestDataTypeVisitor;
+use crate::models::hermes_model::hermes_error::HermesError;
 
 #[derive(Clone, Debug)]
 pub enum RedisDataType {
@@ -13,8 +14,8 @@ pub enum RedisDataType {
     Stream,
 }
 impl RedisDataType {
-    pub fn from_string(json_type: String) -> Self {
-        serde_json::from_str(json_type.as_str()).unwrap()
+    pub fn from_string(json_type: &str) -> Result<Self, HermesError> {
+        serde_json::from_str(json_type.to_lowercase().as_str()).map_err(|e| HermesError::Internal(format!("{}", e)))
     }
 }
 impl<'de> serde::de::Deserialize<'de> for RedisDataType {

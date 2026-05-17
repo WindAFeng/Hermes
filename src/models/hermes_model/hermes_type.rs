@@ -4,6 +4,7 @@ use serde::ser::{SerializeMap, SerializeSeq};
 use serde::{Deserialize, Deserializer, Serialize, Serializer};
 use serde_json::{Map, Number, Value};
 use std::collections::{HashMap, HashSet};
+use redis::{FromRedisValue, ParsingError};
 
 #[derive(Clone, Debug)]
 pub enum HermesType {
@@ -61,6 +62,11 @@ impl Serialize for HermesType {
             }
             Self::None => serializer.serialize_none(),
         }
+    }
+}
+impl FromRedisValue for HermesType {
+    fn from_redis_value(v: redis::Value) -> Result<HermesType, ParsingError> {
+        Ok(from_redis_value_(v))
     }
 }
 impl<'de> Deserialize<'de> for HermesType {

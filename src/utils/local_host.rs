@@ -1,7 +1,7 @@
 use local_ip_address::list_afinet_netifas;
 use std::net::{IpAddr};
+use tracing::log::warn;
 use crate::models::hermes_model::hermes_error::HermesError;
-use crate::utils::log;
 
 pub fn get_local_host() -> Result<String, HermesError> {
     match list_afinet_netifas() {
@@ -13,7 +13,7 @@ pub fn get_local_host() -> Result<String, HermesError> {
                     }
                 }
             }
-            log::warn("Not found LAN IP");
+            warn!("Not found LAN IP");
             Err(HermesError::Internal("Not found LAN IP".to_string()))
         }
         Err(e) => {

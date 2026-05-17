@@ -32,7 +32,12 @@ impl Request {
         let mut result_data: HashMap<String, RedisDataValue> = HashMap::with_capacity(data.len());
         for (k, v) in data.iter() {
             let data_type = match v.type_to_json() {
-                Ok(t) => RedisDataType::from_string(t),
+                Ok(t) => {
+                    match RedisDataType::from_string(&t) { 
+                        Ok(d) => d,
+                        Err(_) => return HashMap::new(),
+                    }
+                },
                 Err(_) => return HashMap::new(),
             };
             let data_value = RedisDataValue {

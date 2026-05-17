@@ -14,13 +14,13 @@ pub enum HermesError {
 
     #[error("JsonError: {0}")]
     Json(#[from] serde_json::Error),
-    
+
     #[error("ConfigError: {0}")]
     Config(#[from] toml::de::Error),
-    
+
     #[error("WebSocket error: {0}")]
     WebSocket(#[from] tokio_tungstenite::tungstenite::Error),
-    
+
     #[error("Invalid database operation: {op}")]
     InvalidOperation { op: String },
 

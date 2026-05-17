@@ -1,7 +1,8 @@
+use tracing::log::{error, info};
 use tokio::signal;
 use crate::models::hermes_model::hermes_error::HermesError;
 use crate::server::main_server::{websocket::WebsocketServer, socket::SocketServer};
-use crate::utils::{config::get_config, log};
+use crate::utils::config::get_config;
 use crate::server::api::web::WebApp;
 
 pub struct MainServer {
@@ -43,16 +44,16 @@ impl MainServer {
         };
         tokio::select! {
             res = socket_fut => {
-                log::error(format!("Socket server exited: {:?}", res));
+                error!("Socket server exited: {:?}", res);
             },
             res = ws_fut => {
-                log::error(format!("WebSocket server exited: {:?}", res));
+                error!("WebSocket server exited: {:?}", res);
             },
             res = http_fut => {
-                log::error(format!("HTTP (actix-web) server exited: {:?}", res));
+                error!("HTTP (actix-web) server exited: {:?}", res);
             },
             _ = signal::ctrl_c() => {
-                log::info("Received Ctrl+C, shutting down...");
+                info!("Received Ctrl+C, shutting down...");
                 return Ok(());
             }
         }

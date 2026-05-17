@@ -1,5 +1,6 @@
 use crate::models::hermes_model::hermes_error::HermesError;
-use crate::utils::{local_host, log};
+use tracing::log::{debug, error};
+use crate::utils::local_host;
 use tokio::net::{TcpListener, TcpStream};
 async fn create_tcp_listener(
     host: &str,
@@ -28,12 +29,8 @@ pub struct Tcp {
 impl Tcp {
     pub async fn new(host: &str, port: &str, socket_type: &str) -> Result<Self, HermesError> {
         let addr = format!("{}:{}", host, port);
-        match create_tcp_listener(&host, &port, addr, socket_type).await {
-            Ok(listener) => {
-                Ok(Self { tcp_listener: listener })
-            }
-            Err(e) => Err(HermesError::from(e)),
-        }
+        let listener = create_tcp_listener(&host, &port, addr, socket_type).await?;
+        Ok(Tcp { tcp_listener: listener })
     }
     pub async fn run<F, FUT>(&self, handel: F)
     where
@@ -42,12 +39,12 @@ impl Tcp {
     {
         loop {
             match self.tcp_listener.accept().await {
-                Ok((socket, addr)) => {
-                    log::debug(format!("Connection from {:?}", addr));
-                    tokio::spawn(handel(socket));
+                Ok((stream, addr)) => {
+                    debug!("Connection from {:?}", addr);
+                    tokio::spawn(handel(stream));
                 }
                 Err(e) => {
-                    log::error(format!("Connect Error: {:?}", e));
+                    error!("Connect Error: {:?}", e);
                 }
             }
         }

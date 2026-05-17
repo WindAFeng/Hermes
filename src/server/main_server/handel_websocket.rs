@@ -1,9 +1,9 @@
-use crate::command_executor::CommandRouter;
+use crate::instruction_processing_center::CommandRouter;
 use crate::models::hermes_model::hermes_error::HermesError;
 use crate::models::ingest_model::request_model::request::Request;
 use crate::models::ingest_model::response_model::response::Response;
-use crate::utils::log;
 use futures_util::{SinkExt, StreamExt, stream::SplitSink};
+use tracing::log::error;
 use tokio::net::TcpStream;
 use tokio_tungstenite::tungstenite::protocol::frame::Utf8Bytes;
 use tokio_tungstenite::tungstenite::{Error, Message};
@@ -18,7 +18,7 @@ fn get_message(message_result: Result<Message, Error>) -> Result<Option<Message>
             Ok(Some(message))
         }
         Err(e) => {
-            log::error(format!("WebSocket Handshake failed: {}", e));
+            error!("WebSocket Handshake failed: {}", e);
             Err(HermesError::from(e))
         }
     }

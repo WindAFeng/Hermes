@@ -4,7 +4,6 @@ pub struct DBInfoManager {
     cached_config: Option<DatabaseConfigRef>,
 }
 
-// 内部辅助结构：统一表示不同数据库的配置引用（这里先只支持 Redis）
 struct DatabaseConfigRef {
     host: String,
     port: String,
@@ -76,9 +75,9 @@ fn load_config(
                 .map(|p| p.to_string())
                 .unwrap_or_else(|| "6379".to_string()),
             priority: redis_config.priority,
-            database: redis_config.database.clone(),
+            database: redis_config.database.clone()?,
             user: redis_config.user.clone(),
-            password: redis_config.password.clone(),
+            password: redis_config.password.clone()?,
         }),
         _ => None,
     }
